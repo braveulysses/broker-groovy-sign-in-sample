@@ -49,8 +49,8 @@ final class HttpsUtil {
    */
   public static SSLContext createDefaultSSLContext() {
     SSLContext sslContext = SSLContext.getInstance("TLS")
-    sslContext.init(null, null, null);
-    return sslContext;
+    sslContext.init(null, null, null)
+    return sslContext
   }
 
   /**
@@ -100,14 +100,14 @@ final class HttpsUtil {
   private static Registry<ConnectionSocketFactory> createConnectionSocketFactoryRegistry(
           boolean useStrictHttpsValidation)
   {
-    SSLContext sslContext;
+    SSLContext sslContext
     if (useStrictHttpsValidation) {
       sslContext = createDefaultSSLContext()
     } else {
       sslContext = createInsecureSSLContext()
     }
 
-    HostnameVerifier hostnameVerifier;
+    HostnameVerifier hostnameVerifier
     if (useStrictHttpsValidation) {
       hostnameVerifier = new DefaultHostnameVerifier()
     } else {

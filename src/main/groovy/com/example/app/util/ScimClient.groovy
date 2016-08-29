@@ -18,7 +18,7 @@ class ScimClient {
   /**
    * The SCIM media type.
    */
-  public static final String APPLICATION_SCIM = "application/scim+json";
+  public static final String APPLICATION_SCIM = "application/scim+json"
 
   /**
    * Creates a {@link ScimService} instance.
@@ -44,8 +44,8 @@ class ScimClient {
               }
             }
     )
-    Client restClient = ClientBuilder.newClient(clientConfig);
-    WebTarget target = restClient.target(new URI(config.getScimEndpoint()));
-    return new ScimService(target);
+    Client restClient = ClientBuilder.newClient(clientConfig)
+    WebTarget target = restClient.target(new URI(config.getScimEndpoint()))
+    return new ScimService(target)
   }
 }
