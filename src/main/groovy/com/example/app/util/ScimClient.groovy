@@ -16,11 +16,6 @@ import javax.ws.rs.client.WebTarget
  */
 class ScimClient {
   /**
-   * The SCIM media type.
-   */
-  public static final String APPLICATION_SCIM = "application/scim+json"
-
-  /**
    * Creates a {@link ScimService} instance.
    *
    * @param config

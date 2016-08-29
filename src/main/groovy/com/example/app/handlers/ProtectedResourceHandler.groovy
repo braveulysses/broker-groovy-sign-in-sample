@@ -24,6 +24,7 @@ import groovy.util.logging.Slf4j
 import ratpack.handling.Context
 import ratpack.handling.Handler
 import ratpack.http.HttpUrlBuilder
+import ratpack.http.MediaType
 
 /**
  * An example protected resource handler. Displays content if the user is
@@ -35,7 +36,7 @@ class ProtectedResourceHandler implements Handler {
   void handle(Context ctx) throws Exception {
     AppSession.fromContext(ctx).then { AppSession appSession ->
       if (appSession.authenticated) {
-        ctx.response.contentType(ScimClient.APPLICATION_SCIM)
+        ctx.response.contentType(MediaType.APPLICATION_JSON)
                 .send(me(ctx.get(AppConfig), appSession.getAccessToken()).toString())
       } else {
         log.info("Unauthenticated user attempting to access a protected resource")
