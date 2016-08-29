@@ -21,11 +21,13 @@ import com.example.app.models.State
 import com.example.app.models.TokenRequest
 import com.example.app.models.TokenResponse
 import com.example.app.util.HttpsUtil
+import com.nimbusds.jose.JWSAlgorithm
 import com.nimbusds.jose.JWSVerifier
 import com.nimbusds.jose.crypto.MACVerifier
 import com.nimbusds.jose.crypto.RSASSAVerifier
 import com.nimbusds.jose.jwk.JWK
 import com.nimbusds.jose.jwk.RSAKey
+import com.nimbusds.jose.util.Base64URL
 import com.nimbusds.jwt.SignedJWT
 import com.unboundid.scim2.common.utils.JsonUtils
 import groovy.util.logging.Slf4j
@@ -35,6 +37,8 @@ import ratpack.http.MediaType
 import ratpack.http.client.HttpClient
 import ratpack.session.Session
 import ratpack.util.MultiValueMap
+
+import java.security.MessageDigest
 
 /**
  * Handles OpenID Connect redirect responses. If an authorization code is
@@ -144,7 +148,8 @@ class CallbackHandler implements Handler {
 
     log.info("Verifying ID token")
     if (tokenResponse.getIdToken()) {
-      validateIdToken(tokenResponse.getIdToken(), config, appSession)
+      validateIdToken(tokenResponse.getIdToken(), tokenResponse.getAccessToken(),
+                      config, appSession)
     } else {
       throw new RuntimeException("ID token missing from authentication response")
     }
@@ -167,8 +172,8 @@ class CallbackHandler implements Handler {
     }
   }
 
-  private static void validateIdToken(String idToken, AppConfig config,
-                                      AppSession appSession) {
+  private static void validateIdToken(String idToken, String accessToken,
+                                      AppConfig config, AppSession appSession) {
     // See OpenID Connect Core, 3.1.3.7, ID Token Validation.
 
     // 6. If the ID Token is received via direct communication between the
@@ -230,6 +235,17 @@ class CallbackHandler implements Handler {
     // method for detecting replay attacks is Client specific.
     matchClaims("nonce", idTokenJws.getJWTClaimsSet().getClaim("nonce") as String,
                 appSession.getNonce())
+    // To validate an Access Token issued from the Token Endpoint with an
+    // ID Token, the Client SHOULD do the following:
+    // 1. Hash the octets of the ASCII representation of the access_token with
+    // the hash algorithm specified in JWA for the alg Header Parameter of the
+    // ID Token's JOSE Header. For instance, if the alg is RS256, the hash
+    // algorithm used is SHA-256.
+    // 2. Take the left-most half of the hash and base64url encode it.
+    // 3. The value of at_hash in the ID Token MUST match the value produced
+    // in the previous step.
+    validateAccessTokenHash(idTokenJws.getHeader().getAlgorithm(), accessToken,
+                            idTokenJws.getJWTClaimsSet().getClaim("at_hash") as String)
   }
 
   private static void matchClaims(String claimName,
@@ -238,5 +254,18 @@ class CallbackHandler implements Handler {
       throw new RuntimeException(
               "Expected ${claimName} '${expectedClaim}' but was '${actualClaim}'")
     }
+  }
+
+  private static void validateAccessTokenHash(
+          JWSAlgorithm signingAlgorithm, String accessToken, String atHash) {
+    // This works as long as the hash algorithm is SHA-based, which is
+    // apparently true for all JWAs.
+    MessageDigest messageDigest = MessageDigest.getInstance(
+            "SHA-" + signingAlgorithm.getName().substring(2))
+
+    byte[] hash = messageDigest.digest(accessToken.getBytes("UTF-8"))
+    byte[] leftHalfHash = Arrays.copyOf(hash, (int) hash.length / 2)
+    String expectedAtHash = Base64URL.encode(leftHalfHash)
+    matchClaims("at_hash", expectedAtHash, atHash)
   }
 }
