@@ -1,0 +1,24 @@
+buildscript {
+  repositories {
+    jcenter()
+  }
+  dependencies {
+    classpath "io.ratpack:ratpack-gradle:1.4.1"
+  }
+}
+
+apply plugin: "io.ratpack.ratpack-groovy"
+apply plugin: "idea"
+apply plugin: "eclipse"
+
+repositories {
+  jcenter()
+  mavenCentral()
+}
+
+dependencies {
+  runtime 'org.slf4j:slf4j-simple:1.7.21'
+  compile 'com.nimbusds:nimbus-jose-jwt:4.26'
+  compile 'com.unboundid.product.scim2:scim2-sdk-client:1.2.9'
+  compile ratpack.dependency('session')
+}

@@ -1,0 +1,15 @@
+# This is an example configuration file. You should customize these values and
+# rename the file to 'config.yaml'.
+
+# Set this to false when interacting with an authentication server that uses
+# self-signed certificates. This should ONLY be done during testing.
+strictHttpsValidation: false
+
+# Authentication server OAuth2/OpenID Connect endpoints.
+authorizeEndpoint: https://example.com/oauth/authorize
+tokenEndpoint: https://example.com/oauth/token
+jwksEndpoint: https://example.com/jwks
+
+# Client credentials.
+clientId: test1
+clientSecret: Srf9BGpgZqfu1TSI8gTFmX9in8B2Z1ox
