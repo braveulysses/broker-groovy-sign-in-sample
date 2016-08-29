@@ -90,9 +90,16 @@ ratpack {
     // authenticated session.
     get("protected", ProtectedResourceHandler)
 
-    // Diagnostic endpoint for application config.
+    // Diagnostic endpoint for the application config.
     get("config") { AppConfig config ->
       response.contentType(MediaType.APPLICATION_JSON).send(toJson(config))
+    }
+
+    // Diagnostic endpoint for the application session.
+    get("session") { Context ctx ->
+      AppSession.fromContext(ctx).then { AppSession appSession ->
+        response.contentType(MediaType.APPLICATION_JSON).send(toJson(appSession))
+      }
     }
 
     // Diagnostic endpoint for confirming the JWKS fetched from the
