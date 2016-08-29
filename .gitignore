@@ -1,13 +1,12 @@
 .idea/.name
 *.iml
-.gradle/
 build
 
 ### Java template
 *.class
 
 # Package Files #
-*.jar
+#*.jar
 *.war
 *.ear
 
