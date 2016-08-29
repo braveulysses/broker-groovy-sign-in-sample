@@ -30,7 +30,12 @@ import java.time.Duration
 import java.time.Instant
 
 /**
- * TODO: Description goes here.
+ * A user session state object that can be encoded into a JWT and signed. When
+ * used in an OpenID Connect authentication request, the integrity of a state
+ * object can be verified when it is returned in the authentication response.
+ * Based on <a href="https://tools.ietf.org/html/draft-bradley-oauth-jwt-encoded-state-05">draft-bradley-oauth-jwt-encoded-state-05</a>,
+ * "Encoding claims in the OAuth 2 state parameter using a JWT", by J. Bradley,
+ * et al.
  */
 class State {
   JWSAlgorithm jwa = JWSAlgorithm.HS256
