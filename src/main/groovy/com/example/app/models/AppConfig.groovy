@@ -32,6 +32,8 @@ class AppConfig {
   // automatically upon startup.
   String signingKey
 
+  // The expected value of the authentication server's iss claim.
+  String issuer = "https://example.com"
   // The authentication server's OAuth 2 authorization endpoint.
   String authorizeEndpoint = "https://example.com/oauth/authorize"
   // The authentication server's OAuth 2 token endpoint.

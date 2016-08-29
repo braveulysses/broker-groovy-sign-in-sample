@@ -5,10 +5,14 @@
 # self-signed certificates. This should ONLY be done during testing.
 strictHttpsValidation: false
 
+# Authentication server iss value.
+issuer: https://example.com
 # Authentication server OAuth2/OpenID Connect endpoints.
 authorizeEndpoint: https://example.com/oauth/authorize
 tokenEndpoint: https://example.com/oauth/token
 jwksEndpoint: https://example.com/jwks
+# The JWA used to sign ID tokens for this application.
+idTokenSigningAlgorithm: RS256
 
 # Client credentials.
 clientId: test1

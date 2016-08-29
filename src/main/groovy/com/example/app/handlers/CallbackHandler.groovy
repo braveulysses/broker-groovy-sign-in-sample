@@ -52,7 +52,7 @@ class CallbackHandler implements Handler {
       // Handle error response.
       log.warn("Received error callback URI {}", ctx.getRequest().getUri())
       String exceptionMessage =
-              "Authentication error! error=${queryParams.error}; " +
+              "Authentication error: error=${queryParams.error}; " +
                       "error_description=${queryParams.error_description}"
       throw new RuntimeException(exceptionMessage)
     } else {
@@ -62,9 +62,11 @@ class CallbackHandler implements Handler {
         String stateJwt = queryParams.state
         if (stateJwt) {
           if (stateJwt != appSession.getState()) {
-            throw new RuntimeException("Received unexpected state from authentication server")
+            throw new RuntimeException(
+                    "Received unexpected state from authentication server")
           }
-          if (!State.verify(stateJwt, config.getSigningKey(), appSession.getSessionSecret())) {
+          if (!State.verify(stateJwt, config.getSigningKey(),
+                            appSession.getSessionSecret())) {
             throw new RuntimeException("state verification failed")
           }
         } else {
@@ -107,7 +109,7 @@ class CallbackHandler implements Handler {
       log.info("Token response: ${body}")
       TokenResponse tokenResponse =
               JsonUtils.createObjectMapper().readValue(body, TokenResponse)
-      validateTokenResponse(tokenResponse, config)
+      validateTokenResponse(tokenResponse, config, appSession)
       appSession.setAuthenticated(true)
       appSession.setAccessToken(tokenResponse.getAccessToken())
       appSession.setIdToken(tokenResponse.getIdToken())
@@ -116,15 +118,13 @@ class CallbackHandler implements Handler {
         throw new RuntimeException("Failed to update session")
       }.then {
         log.info("Verified token response")
-        println appSession.getNonce()
-        println appSession.getAuthenticated()
-
         ctx.redirect "/"
       }
     }
   }
 
-  private static void validateTokenResponse(TokenResponse tokenResponse, AppConfig config) {
+  private static void validateTokenResponse(
+          TokenResponse tokenResponse, AppConfig config, AppSession appSession) {
     log.info("Checking scopes in token response")
     if (!tokenResponse.getScopes().isEmpty()) {
       if (!tokenResponse.getScopes().containsAll(config.getScopes())) {
@@ -144,22 +144,14 @@ class CallbackHandler implements Handler {
 
     log.info("Verifying ID token")
     if (tokenResponse.getIdToken()) {
-      SignedJWT idToken = SignedJWT.parse(tokenResponse.getIdToken())
-      if (config.getIdTokenSigningAlgorithm().getName().startsWith("HS")) {
-        verifyJws(idToken, config.getClientSecret())
-      } else if (config.getIdTokenSigningAlgorithm().getName().startsWith("RS")) {
-        String kid = idToken.getHeader().getKeyID()
-        JWK jwk = config.getJwks().getKeyByKeyId(kid)
-        verifyJws(idToken, jwk)
-        // TODO: Further validate the ID token.
-      } else {
-        throw new RuntimeException("Unsupported JWA '${config.getIdTokenSigningAlgorithm().getName()}'")
-      }
+      validateIdToken(tokenResponse.getIdToken(), config, appSession)
+    } else {
+      throw new RuntimeException("ID token missing from authentication response")
     }
   }
 
   private static void verifyJws(SignedJWT jwt, JWK jwk) {
-    log.info("JWK: ${jwk.toJSONString()}")
+    log.debug("JWK: ${jwk.toJSONString()}")
     JWSVerifier verifier = new RSASSAVerifier((RSAKey) jwk)
     verifyJws(jwt, verifier)
   }
@@ -172,6 +164,79 @@ class CallbackHandler implements Handler {
   private static void verifyJws(SignedJWT jwt, JWSVerifier verifier) {
     if (!jwt.verify(verifier)) {
       throw new RuntimeException("Token signature could not be verified")
+    }
+  }
+
+  private static void validateIdToken(String idToken, AppConfig config,
+                                      AppSession appSession) {
+    // See OpenID Connect Core, 3.1.3.7, ID Token Validation.
+
+    // 6. If the ID Token is received via direct communication between the
+    // Client and the Token Endpoint (which it is in this flow), the TLS server
+    // validation MAY be used to validate the issuer in place of checking the
+    // token signature. The Client MUST validate the signature of all other ID
+    // Tokens according to JWS using the algorithm specified in the JWT alg
+    // Header Parameter. The Client MUST use the keys provided by the Issuer.
+    // 8. If the JWT alg Header Parameter uses a MAC based algorithm such as
+    // HS256, HS384, or HS512, the octets of the UTF-8 representation of the
+    // client_secret corresponding to the client_id contained in the aud
+    // (audience) Claim are used as the key to validate the signature. For MAC
+    // based algorithms, the behavior is unspecified if the aud is multi-valued
+    // or if an azp value is present that is different than the aud value.
+    SignedJWT idTokenJws = SignedJWT.parse(idToken)
+    if (config.getIdTokenSigningAlgorithm().getName().startsWith("HS")) {
+      verifyJws(idTokenJws, config.getClientSecret())
+    } else if (config.getIdTokenSigningAlgorithm().getName().startsWith("RS")) {
+      String kid = idTokenJws.getHeader().getKeyID()
+      JWK jwk = config.getJwks().getKeyByKeyId(kid)
+      verifyJws(idTokenJws, jwk)
+    } else {
+      throw new RuntimeException(
+              "Unsupported JWA '${config.getIdTokenSigningAlgorithm().getName()}'")
+    }
+
+    // 2. The Issuer Identifier for the OpenID Provider (which is typically
+    // obtained during Discovery) MUST exactly match the value of the iss
+    // (issuer) Claim.
+    if (idTokenJws.getJWTClaimsSet().getIssuer() != config.getIssuer()) {
+      throw new RuntimeException(
+              "Expected iss '${config.getIssuer()}' but was " +
+                      "'${idTokenJws.getJWTClaimsSet().getIssuer()}'")
+    }
+    matchClaims("iss", idTokenJws.getJWTClaimsSet().getIssuer(),
+                config.getIssuer())
+
+    // 3. The Client MUST validate that the aud (audience) Claim contains its
+    // client_id value registered at the Issuer identified by the iss (issuer)
+    // Claim as an audience. The aud (audience) Claim MAY contain an array with
+    // more than one element. The ID Token MUST be rejected if the ID Token
+    // does not list the Client as a valid audience, or if it contains
+    // additional audiences not trusted by the Client.
+    if (idTokenJws.getJWTClaimsSet().getAudience().size() != 1) {
+      throw new RuntimeException("Expected aud claim to contain exactly one value")
+    }
+    matchClaims("aud", idTokenJws.getJWTClaimsSet().getAudience().first(),
+                config.getClientId())
+
+    // 9. The current time MUST be before the time represented by the exp Claim.
+    if (idTokenJws.getJWTClaimsSet().getExpirationTime().before(new Date())) {
+      throw new RuntimeException("Expected current time to not precede exp time")
+    }
+
+    // 11. If a nonce value was sent in the Authentication Request, a nonce
+    // Claim MUST be present and its value checked to verify that it is the
+    // same value as the one that was sent in the Authentication Request. The
+    // Client SHOULD check the nonce value for replay attacks. The precise
+    // method for detecting replay attacks is Client specific.
+    matchClaims("nonce", idTokenJws.getJWTClaimsSet().getClaim("nonce") as String,
+                appSession.getNonce())
+  }
+
+  private static void matchClaims(String claimName,
+                                  String expectedClaim, String actualClaim) {
+    if (actualClaim != expectedClaim) {
+      throw new RuntimeException(
+              "Expected ${claimName} '${expectedClaim}' but was '${actualClaim}'")
     }
   }
 }
