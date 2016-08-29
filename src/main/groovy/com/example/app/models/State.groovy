@@ -57,7 +57,7 @@ class State {
             .issueTime(iat)
             .expirationTime(exp)
             .audience(aud)
-            .claim("sessionSecret", rfp)
+            .claim("rfp", rfp)
             .build()
     SignedJWT jwt = new SignedJWT(new JWSHeader(jwa), claimsSet)
     JWSSigner signer = new MACSigner(signingKey)
@@ -68,7 +68,7 @@ class State {
   public static boolean verify(String jwt, String signingKey, String expectedRfp) {
     JWT parsedJwt = SignedJWT.parse(jwt)
     return verifyJws(jwt, signingKey) &&
-            parsedJwt.getJWTClaimsSet().getClaim("sessionSecret") == expectedRfp &&
+            parsedJwt.getJWTClaimsSet().getClaim("rfp") == expectedRfp &&
             parsedJwt.getJWTClaimsSet().getIssueTime().toInstant().isBefore(Instant.now()) &&
             parsedJwt.getJWTClaimsSet().getExpirationTime().toInstant().isAfter(Instant.now())
   }
