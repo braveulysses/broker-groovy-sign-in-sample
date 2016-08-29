@@ -40,6 +40,8 @@ class AppConfig {
   String tokenEndpoint = "https://example.com/oauth/token"
   // The authentication server's OpenID Connect JWKS endpoint.
   String jwksEndpoint = "https://example.com/jwks"
+  // The authentication server's base SCIM 2 endpoint.
+  String scimEndpoint = "https://example.com/scim/v2"
 
   // The signing algorithm that the authentication server is expected to use
   // to sign ID tokens.

@@ -15,10 +15,15 @@
  */
 package com.example.app.handlers
 
+import com.example.app.models.AppConfig
 import com.example.app.models.AppSession
+import com.example.app.util.ScimClient
+import com.unboundid.scim2.client.ScimService
+import com.unboundid.scim2.common.GenericScimResource
 import groovy.util.logging.Slf4j
 import ratpack.handling.Context
 import ratpack.handling.Handler
+import ratpack.http.HttpUrlBuilder
 
 /**
  * An example protected resource handler. Displays content if the user is
@@ -30,11 +35,20 @@ class ProtectedResourceHandler implements Handler {
   void handle(Context ctx) throws Exception {
     AppSession.fromContext(ctx).then { AppSession appSession ->
       if (appSession.authenticated) {
-        ctx.render "You're authenticated"
+        ctx.response.contentType(ScimClient.APPLICATION_SCIM)
+                .send(me(ctx.get(AppConfig), appSession.getAccessToken()).toString())
       } else {
         log.info("Unauthenticated user attempting to access a protected resource")
         ctx.redirect "/login"
       }
     }
+  }
+
+  private static GenericScimResource me(AppConfig config, String bearerToken) {
+    URI meEndpoint = HttpUrlBuilder.base(new URI(config.getScimEndpoint()))
+            .path("Me")
+            .build()
+    ScimService scimService = ScimClient.createInstance(config, bearerToken)
+    return scimService.retrieve(meEndpoint, GenericScimResource)
   }
 }

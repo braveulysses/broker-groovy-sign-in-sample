@@ -64,7 +64,9 @@ The application currently lacks an HTML-based UI. To test, load
 browser. This endpoint will detect that you are not authenticated and redirect
 you to the configured authentication server. Upon successful authentication,
 you will be redirected back to the sample application. A message should
-indicate that you are authenticated.
+indicate that you are authenticated. If you return to the `/protected`
+endpoint, it will detect that you are logged in, perform a GET on the SCIM
+`/Me` endpoint, and present the results.
 
 ## About this sample application
 
@@ -105,9 +107,11 @@ and ID tokens issued by the authentication server.
 
 * **SessionHandler**: Invoked for every request. Checks for a session and creates
 one when one doesn't already exist.
-* **ProtectedResourceHandler** `/protected`: Represents an application resource that may not
-be accessed by an unauthenticated user. If the user is not authenticated, then
-this handler will redirect to the login endpoint.
+* **ProtectedResourceHandler** `/protected`: Represents an application resource
+that may not be accessed by an unauthenticated user. If the user is not
+authenticated, then this handler will redirect to the login endpoint. If the
+user is authenticated, then this handler will perform a SCIM request and
+display the result.
 * **LoginHandler** `/login`: Creates an OpenID Connect and redirects to the
 authentication server.
 * **CallbackHandler** `/callback`: Receives an OpenID Connect redirect response,

@@ -11,6 +11,9 @@ issuer: https://example.com
 authorizeEndpoint: https://example.com/oauth/authorize
 tokenEndpoint: https://example.com/oauth/token
 jwksEndpoint: https://example.com/jwks
+# Resource server SCIM endpoint.
+scimEndpoint: https://example.com/scim/v2
+
 # The JWA used to sign ID tokens for this application.
 idTokenSigningAlgorithm: RS256
 
