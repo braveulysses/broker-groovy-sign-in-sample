@@ -41,6 +41,7 @@ class LoginHandler implements Handler {
       JWSObject stateJws = state.sign(config.getSigningKey())
       String stateJwt = stateJws.serialize()
       appSession.setState(stateJwt)
+      appSession.updateNonce()
       Session session = ctx.get(Session)
       session.set("s", appSession).onError {
         throw new RuntimeException("Failed to update session")

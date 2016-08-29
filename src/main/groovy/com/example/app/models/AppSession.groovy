@@ -39,6 +39,11 @@ class AppSession implements Serializable {
     this.authenticated = false
   }
 
+  public void updateNonce() {
+    SecureRandom random = new SecureRandom()
+    nonce = generateUniqueValue(random)
+  }
+
   public static Promise<AppSession> fromContext(Context ctx) {
     AppSession appSession = new AppSession();
     return Promise.async { downstream ->
