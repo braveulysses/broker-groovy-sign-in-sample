@@ -146,7 +146,10 @@ class CallbackHandler implements Handler {
     log.info("Checking scopes in token response")
     if (!tokenResponse.getScopes().isEmpty()) {
       if (!tokenResponse.getScopes().containsAll(config.getScopes())) {
-        throw new CallbackValidationException("Expected scopes not granted")
+        throw new CallbackValidationException(
+                "Expected scopes not granted. " +
+                        "Expected scopes: ${config.getScopes()}; " +
+                        "Actual scopes: ${tokenResponse.getScopes()}")
       }
     }
 
