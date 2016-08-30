@@ -35,9 +35,11 @@ import java.util.stream.Collectors
 class LoginHandler implements Handler {
   @Override
   void handle(Context ctx) throws Exception {
+    String returnUri = ctx.getRequest().getQueryParams().get("return_uri", null)
     AppConfig config = ctx.get(AppConfig)
     AppSession.fromContext(ctx).then { AppSession appSession ->
-      State state = new State(appSession.getSessionSecret(), config.getClientId())
+      State state = new State(appSession.getSessionSecret(),
+                              config.getClientId(), returnUri)
       JWSObject stateJws = state.sign(config.getSigningKey())
       String stateJwt = stateJws.serialize()
       appSession.setState(stateJwt)

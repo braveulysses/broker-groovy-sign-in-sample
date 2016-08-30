@@ -81,6 +81,15 @@ class CallbackHandler implements Handler {
           // Make a token request using the authorization code.
           log.info("Requesting access token")
           requestToken(ctx, config, appSession, authorizationCode)
+          // Redirect the user-agent to the URI specified in the return_uri
+          // when the login request was made earlier.
+          String returnUri = SignedJWT.parse(stateJwt).getJWTClaimsSet()
+                  .getClaim("return_uri")
+          if (returnUri) {
+            ctx.redirect returnUri
+          } else {
+            ctx.redirect "/"
+          }
         } else {
           throw new RuntimeException("code parameter not found")
         }
@@ -122,7 +131,6 @@ class CallbackHandler implements Handler {
         throw new RuntimeException("Failed to update session")
       }.then {
         log.info("Verified token response")
-        ctx.redirect "/"
       }
     }
   }
@@ -235,6 +243,7 @@ class CallbackHandler implements Handler {
     // method for detecting replay attacks is Client specific.
     matchClaims("nonce", idTokenJws.getJWTClaimsSet().getClaim("nonce") as String,
                 appSession.getNonce())
+
     // To validate an Access Token issued from the Token Endpoint with an
     // ID Token, the Client SHOULD do the following:
     // 1. Hash the octets of the ASCII representation of the access_token with

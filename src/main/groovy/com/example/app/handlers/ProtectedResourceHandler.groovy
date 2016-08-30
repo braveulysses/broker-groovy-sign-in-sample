@@ -24,7 +24,6 @@ import groovy.util.logging.Slf4j
 import ratpack.handling.Context
 import ratpack.handling.Handler
 import ratpack.http.HttpUrlBuilder
-import ratpack.http.MediaType
 
 import static ratpack.handlebars.Template.handlebarsTemplate
 
@@ -36,6 +35,7 @@ import static ratpack.handlebars.Template.handlebarsTemplate
 class ProtectedResourceHandler implements Handler {
   @Override
   void handle(Context ctx) throws Exception {
+    String returnUri = ctx.getRequest().getUri()
     AppSession.fromContext(ctx).then { AppSession appSession ->
       if (appSession.getAuthenticated()) {
         String resource = me(ctx.get(AppConfig), appSession.getAccessToken()).toString()
@@ -45,7 +45,7 @@ class ProtectedResourceHandler implements Handler {
         ], "text/html"))
       } else {
         log.info("Unauthenticated user attempting to access a protected resource")
-        ctx.redirect "/login"
+        ctx.redirect "/login?return_uri=${returnUri}"
       }
     }
   }

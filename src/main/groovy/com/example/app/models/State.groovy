@@ -44,12 +44,14 @@ class State {
   Date iat
   Date exp
   String aud
+  String returnUri
 
-  public State(String sessionSecret, String clientId) {
+  public State(String sessionSecret, String clientId, String returnUri) {
     this.rfp = sessionSecret
     this.iat = new Date(Instant.now().toEpochMilli())
     this.exp = new Date((Instant.now() + Duration.ofMinutes(15)).toEpochMilli())
     this.aud = clientId
+    this.returnUri = returnUri
   }
 
   public JWSObject sign(String signingKey) {
@@ -58,6 +60,7 @@ class State {
             .expirationTime(exp)
             .audience(aud)
             .claim("rfp", rfp)
+            .claim("return_uri", returnUri)
             .build()
     SignedJWT jwt = new SignedJWT(new JWSHeader(jwa), claimsSet)
     JWSSigner signer = new MACSigner(signingKey)
