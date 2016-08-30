@@ -38,6 +38,7 @@ import ratpack.http.client.HttpClient
 import ratpack.session.Session
 import ratpack.util.MultiValueMap
 
+import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
 
 /**
@@ -272,7 +273,7 @@ class CallbackHandler implements Handler {
     MessageDigest messageDigest = MessageDigest.getInstance(
             "SHA-" + signingAlgorithm.getName().substring(2))
 
-    byte[] hash = messageDigest.digest(accessToken.getBytes("UTF-8"))
+    byte[] hash = messageDigest.digest(accessToken.getBytes(StandardCharsets.UTF_8))
     byte[] leftHalfHash = Arrays.copyOf(hash, (int) hash.length / 2)
     String expectedAtHash = Base64URL.encode(leftHalfHash)
     matchClaims("at_hash", expectedAtHash, atHash)
