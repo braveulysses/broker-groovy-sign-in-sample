@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+
+import com.example.app.handlers.RootHandler
 import com.example.app.models.AppConfig
 import com.example.app.handlers.CallbackHandler
 import com.example.app.handlers.DefaultServerErrorHandler
@@ -34,7 +36,6 @@ import ratpack.session.SessionModule
 
 import static ratpack.groovy.Groovy.ratpack
 import static groovy.json.JsonOutput.toJson
-import static ratpack.handlebars.Template.handlebarsTemplate
 
 /**
  * This is the application's entry point. Bindings for modules, services, and
@@ -56,6 +57,7 @@ ratpack {
     add RequestLogger.ncsa()
     bindInstance ServerErrorHandler, new DefaultServerErrorHandler()
     add new SessionHandler()
+    add new RootHandler()
     add new CallbackHandler()
     add new LoginHandler()
     add new LogoutHandler()
@@ -70,14 +72,7 @@ ratpack {
     all(SessionHandler)
 
     // Root path handler ('/').
-    get { Context ctx ->
-      AppSession.fromContext(ctx).then { AppSession appSession ->
-        boolean authenticated = appSession.getAuthenticated()
-        render(handlebarsTemplate("index", [
-                authenticated: authenticated
-        ], "text/html"))
-      }
-    }
+    get(RootHandler)
 
     // Login handler. Forms an OpenID Connect request and redirects to the
     // authentication server.

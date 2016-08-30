@@ -1,0 +1,24 @@
+<header>
+  <nav class="cyan lighten-4" role="navigation">
+    <div class="nav-wrapper container"><a id="logo-container" href="/" class="brand-logo"><i class="small material-icons">home</i></a>
+      {{#if authenticated}}
+        <ul class="right hide-on-med-and-down">
+          <li><a href="/logout"><i class="small material-icons right">exit_to_app</i>Log out</a></li>
+        </ul>
+
+        <ul id="nav-mobile" class="side-nav">
+          <li><a href="/logout"><i class="small material-icons right">exit_to_app</i>Log out</a></li>
+        </ul>
+      {{else}}
+        <ul class="right hide-on-med-and-down">
+          <li><a href="/login?return_uri={{returnUri}}"><i class="small material-icons left rotate-cc-45">exit_to_app</i>Log in</a></li>
+        </ul>
+
+        <ul id="nav-mobile" class="side-nav">
+          <li><a href="/login?return_uri={{returnUri}}"><i class="small material-icons left rotate-cc-45">exit_to_app</i>Log in</a></li>
+        </ul>
+      {{/if}}
+      <a href="#" data-activates="nav-mobile" class="button-collapse"><i class="material-icons">menu</i></a>
+    </div>
+  </nav>
+</header>

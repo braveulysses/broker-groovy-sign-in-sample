@@ -41,7 +41,8 @@ class ProtectedResourceHandler implements Handler {
         String resource = me(ctx.get(AppConfig), appSession.getAccessToken()).toString()
         ctx.render(handlebarsTemplate("resource", [
                 authenticated: appSession.getAuthenticated(),
-                resource: resource
+                resource: resource,
+                returnUri: returnUri
         ], "text/html"))
       } else {
         log.info("Unauthenticated user attempting to access a protected resource")
