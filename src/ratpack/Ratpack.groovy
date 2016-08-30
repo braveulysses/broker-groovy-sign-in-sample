@@ -15,6 +15,7 @@
  */
 
 
+import com.example.app.handlers.NotFoundErrorHandler
 import com.example.app.handlers.RootHandler
 import com.example.app.models.AppConfig
 import com.example.app.handlers.CallbackHandler
@@ -27,6 +28,7 @@ import com.example.app.models.AppSession
 import com.example.app.services.JwksService
 import com.example.app.services.ConfigService
 import com.nimbusds.jose.jwk.JWKSet
+import ratpack.error.ClientErrorHandler
 import ratpack.error.ServerErrorHandler
 import ratpack.handlebars.HandlebarsModule
 import ratpack.handling.Context
@@ -56,6 +58,7 @@ ratpack {
     bind JwksService
     add RequestLogger.ncsa()
     bindInstance ServerErrorHandler, new DefaultServerErrorHandler()
+    bindInstance ClientErrorHandler, new NotFoundErrorHandler()
     add new SessionHandler()
     add new RootHandler()
     add new CallbackHandler()
@@ -88,6 +91,7 @@ ratpack {
     // Example protected resource handler. Requires the user to have an
     // authenticated session.
     get("protected", ProtectedResourceHandler)
+    get("protected/default", ProtectedResourceHandler)
 
     // Diagnostic endpoint for the application config.
     get("config") { AppConfig config ->
