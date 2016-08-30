@@ -57,12 +57,13 @@ class LoginHandler implements Handler {
   }
 
   private static URI authenticationURI(AppSession appSession, AppConfig config) {
-    Map<String, String> params = new HashMap<>()
-    params.put("response_type", "code")
-    params.put("state", appSession.getState())
-    params.put("nonce", appSession.getNonce())
-    params.put("client_id", config.getClientId())
-    params.put("redirect_uri", config.getRedirectUri())
+    Map<String, String> params = [
+            response_type: "code",
+            state: appSession.getState(),
+            nonce: appSession.getNonce(),
+            client_id: config.getClientId(),
+            redirect_uri: config.getRedirectUri()
+    ]
     if (!config.getScopes().isEmpty()) {
       String scopes =
               config.getScopes().stream().collect(Collectors.joining(' '))
