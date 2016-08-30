@@ -112,8 +112,8 @@ that may not be accessed by an unauthenticated user. If the user is not
 authenticated, then this handler will redirect to the login endpoint. If the
 user is authenticated, then this handler will perform a SCIM request and
 display the result.
-* **LoginHandler** `/login`: Creates an OpenID Connect and redirects to the
-authentication server.
+* **LoginHandler** `/login`: Creates an OpenID Connect request and redirects to
+the authentication server.
 * **CallbackHandler** `/callback`: Receives an OpenID Connect redirect response,
 validates the response, marks the session as authenticated, and redirects to
 the root endpoint.
