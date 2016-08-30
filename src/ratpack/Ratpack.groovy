@@ -26,6 +26,7 @@ import com.example.app.services.JwksService
 import com.example.app.services.ConfigService
 import com.nimbusds.jose.jwk.JWKSet
 import ratpack.error.ServerErrorHandler
+import ratpack.handlebars.HandlebarsModule
 import ratpack.handling.Context
 import ratpack.handling.RequestLogger
 import ratpack.http.MediaType
@@ -33,6 +34,7 @@ import ratpack.session.SessionModule
 
 import static ratpack.groovy.Groovy.ratpack
 import static groovy.json.JsonOutput.toJson
+import static ratpack.handlebars.Template.handlebarsTemplate
 
 /**
  * This is the application's entry point. Bindings for modules, services, and
@@ -46,6 +48,9 @@ ratpack {
 
   bindings {
     module SessionModule
+    module(HandlebarsModule) { HandlebarsModule.Config config ->
+      config.templatesPath "templates"
+    }
     bind ConfigService
     bind JwksService
     add RequestLogger.ncsa()
@@ -67,11 +72,10 @@ ratpack {
     // Root path handler ('/').
     get { Context ctx ->
       AppSession.fromContext(ctx).then { AppSession appSession ->
-        if (appSession.authenticated) {
-          render "You're authenticated"
-        } else {
-          render "You're not authenticated"
-        }
+        boolean authenticated = appSession.getAuthenticated()
+        render(handlebarsTemplate("index", [
+                authenticated: authenticated
+        ], "text/html"))
       }
     }
 
@@ -107,6 +111,11 @@ ratpack {
     get("jwks") { Context ctx ->
       JWKSet jwkSet = ctx.get(AppConfig).getJwks()
       response.contentType(MediaType.APPLICATION_JSON).send(jwkSet.toString())
+    }
+
+    // Static files.
+    files {
+      dir("static").indexFiles("index.html")
     }
   }
 }

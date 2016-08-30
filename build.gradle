@@ -23,4 +23,5 @@ dependencies {
   compile 'org.glassfish.jersey.connectors:jersey-apache-connector:2.23.2'
   compile 'com.unboundid.product.scim2:scim2-sdk-client:1.2.9'
   compile ratpack.dependency('session')
+  compile ratpack.dependency("handlebars")
 }

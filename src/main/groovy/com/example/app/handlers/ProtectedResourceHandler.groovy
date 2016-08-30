@@ -26,6 +26,8 @@ import ratpack.handling.Handler
 import ratpack.http.HttpUrlBuilder
 import ratpack.http.MediaType
 
+import static ratpack.handlebars.Template.handlebarsTemplate
+
 /**
  * An example protected resource handler. Displays content if the user is
  * authenticated. Otherwise, redirects to the login handler.
@@ -35,9 +37,12 @@ class ProtectedResourceHandler implements Handler {
   @Override
   void handle(Context ctx) throws Exception {
     AppSession.fromContext(ctx).then { AppSession appSession ->
-      if (appSession.authenticated) {
-        ctx.response.contentType(MediaType.APPLICATION_JSON)
-                .send(me(ctx.get(AppConfig), appSession.getAccessToken()).toString())
+      if (appSession.getAuthenticated()) {
+        String resource = me(ctx.get(AppConfig), appSession.getAccessToken()).toString()
+        ctx.render(handlebarsTemplate("resource", [
+                authenticated: appSession.getAuthenticated(),
+                resource: resource
+        ], "text/html"))
       } else {
         log.info("Unauthenticated user attempting to access a protected resource")
         ctx.redirect "/login"

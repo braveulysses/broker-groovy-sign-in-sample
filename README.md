@@ -60,14 +60,13 @@ $ ./gradlew run
 [main] INFO ratpack.server.RatpackServer - Ratpack started (development) for http://localhost:5050
 ```
 
-The application currently lacks an HTML-based UI. To test, load
-[http://localhost:5050/protected](http://localhost:5050/protected) in your web
-browser. This endpoint will detect that you are not authenticated and redirect
-you to the configured authentication server. Upon successful authentication,
-you will be redirected back to the sample application. A message should
-indicate that you are authenticated. If you return to the `/protected`
-endpoint, it will detect that you are logged in, perform a GET on the SCIM
-`/Me` endpoint, and present the results.
+To test, load [http://localhost:5050/protected](http://localhost:5050/protected)
+in your web browser. This endpoint will detect that you are not authenticated
+and redirect you to the configured authentication server. Upon successful
+authentication, you will be redirected back to the sample application. The
+presence of a logout link will indicate that you are authenticated. If you
+return to the `/protected` endpoint, it will detect that you are logged in,
+perform a GET on the SCIM `/Me` endpoint, and present the results.
 
 ## About this sample application
 
@@ -125,8 +124,6 @@ redirects to the root endpoint.
 
 * Java 8 is required.
 * Data Broker 6.0.0.0 and up is required.
-* For simplicity's sake, this sample application does not produce a graphical
-UI. One may be added later.
 * The application does not support encrypted ID tokens. This is left as an
 exercise for the reader.
 
