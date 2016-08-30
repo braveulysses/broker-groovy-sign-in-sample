@@ -15,6 +15,7 @@
  */
 package com.example.app.handlers
 
+import com.example.app.exceptions.SessionException
 import com.example.app.models.AppSession
 import groovy.util.logging.Slf4j
 import ratpack.handling.Context
@@ -22,7 +23,9 @@ import ratpack.handling.Handler
 import ratpack.session.Session
 
 /**
- * TODO: Description goes here.
+ * Logs the user out of the application by flipping the 'authenticated' flag on
+ * the session and nulling out the access and ID tokens. This does not log the
+ * user out of the authentication server.
  */
 @Slf4j
 class LogoutHandler implements Handler {
@@ -35,7 +38,7 @@ class LogoutHandler implements Handler {
       appSession.setIdToken(null)
       Session session = ctx.get(Session)
       session.set("s", appSession).onError {
-        throw new RuntimeException("Failed to update session")
+        throw new SessionException("Failed to update session")
       }.then {
         ctx.redirect "/"
       }

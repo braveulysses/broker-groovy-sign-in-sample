@@ -15,6 +15,10 @@
  */
 package com.example.app.handlers
 
+import com.example.app.exceptions.CallbackErrorException
+import com.example.app.exceptions.CallbackValidationException
+import com.example.app.exceptions.SessionException
+import com.example.app.exceptions.TokenRequestException
 import com.example.app.models.AppConfig
 import com.example.app.models.AppSession
 import com.example.app.models.State
@@ -59,7 +63,8 @@ class CallbackHandler implements Handler {
       String exceptionMessage =
               "Authentication error: error=${queryParams.error}; " +
                       "error_description=${queryParams.error_description}"
-      throw new RuntimeException(exceptionMessage)
+      throw new CallbackErrorException(
+              exceptionMessage, queryParams.error, queryParams.error_description)
     } else {
       // Handle response with authorization code.
       AppSession.fromContext(ctx).then { AppSession appSession ->
@@ -67,15 +72,15 @@ class CallbackHandler implements Handler {
         String stateJwt = queryParams.state
         if (stateJwt) {
           if (stateJwt != appSession.getState()) {
-            throw new RuntimeException(
+            throw new CallbackValidationException(
                     "Received unexpected state from authentication server")
           }
           if (!State.verify(stateJwt, config.getSigningKey(),
                             appSession.getSessionSecret())) {
-            throw new RuntimeException("state verification failed")
+            throw new CallbackValidationException("state verification failed")
           }
         } else {
-          throw new RuntimeException("state parameter not found")
+          throw new CallbackValidationException("state parameter not found")
         }
         String authorizationCode = queryParams.code
         if (authorizationCode) {
@@ -92,7 +97,7 @@ class CallbackHandler implements Handler {
             ctx.redirect "/"
           }
         } else {
-          throw new RuntimeException("code parameter not found")
+          throw new CallbackValidationException("code parameter not found")
         }
       }
     }
@@ -116,7 +121,7 @@ class CallbackHandler implements Handler {
         body.type(MediaType.APPLICATION_FORM).text(tokenRequest.formUrlEncoded())
       }
     }.onError { throwable ->
-      throw new RuntimeException("Error while requesting token", throwable)
+      throw new TokenRequestException("Error while requesting token", throwable)
     }.map { response ->
       return response.getBody().getText()
     }.then { body ->
@@ -129,7 +134,7 @@ class CallbackHandler implements Handler {
       appSession.setIdToken(tokenResponse.getIdToken())
       Session session = ctx.get(Session)
       session.set("s", appSession).onError {
-        throw new RuntimeException("Failed to update session")
+        throw new SessionException("Failed to update session")
       }.then {
         log.info("Verified token response")
       }
@@ -141,7 +146,7 @@ class CallbackHandler implements Handler {
     log.info("Checking scopes in token response")
     if (!tokenResponse.getScopes().isEmpty()) {
       if (!tokenResponse.getScopes().containsAll(config.getScopes())) {
-        throw new RuntimeException("Expected scopes not granted")
+        throw new CallbackValidationException("Expected scopes not granted")
       }
     }
 
@@ -152,7 +157,8 @@ class CallbackHandler implements Handler {
       JWK jwk = config.getJwks().getKeyByKeyId(kid)
       verifyJws(accessToken, jwk)
     } else {
-      throw new RuntimeException("Access token missing from authentication response")
+      throw new CallbackValidationException(
+              "Access token missing from authentication response")
     }
 
     log.info("Verifying ID token")
@@ -160,7 +166,8 @@ class CallbackHandler implements Handler {
       validateIdToken(tokenResponse.getIdToken(), tokenResponse.getAccessToken(),
                       config, appSession)
     } else {
-      throw new RuntimeException("ID token missing from authentication response")
+      throw new CallbackValidationException(
+              "ID token missing from authentication response")
     }
   }
 
@@ -177,7 +184,7 @@ class CallbackHandler implements Handler {
 
   private static void verifyJws(SignedJWT jwt, JWSVerifier verifier) {
     if (!jwt.verify(verifier)) {
-      throw new RuntimeException("Token signature could not be verified")
+      throw new CallbackValidationException("Token signature could not be verified")
     }
   }
 
@@ -205,7 +212,7 @@ class CallbackHandler implements Handler {
       JWK jwk = config.getJwks().getKeyByKeyId(kid)
       verifyJws(idTokenJws, jwk)
     } else {
-      throw new RuntimeException(
+      throw new CallbackValidationException(
               "Unsupported JWA '${config.getIdTokenSigningAlgorithm().getName()}'")
     }
 
@@ -213,7 +220,7 @@ class CallbackHandler implements Handler {
     // obtained during Discovery) MUST exactly match the value of the iss
     // (issuer) Claim.
     if (idTokenJws.getJWTClaimsSet().getIssuer() != config.getIssuer()) {
-      throw new RuntimeException(
+      throw new CallbackValidationException(
               "Expected iss '${config.getIssuer()}' but was " +
                       "'${idTokenJws.getJWTClaimsSet().getIssuer()}'")
     }
@@ -227,14 +234,16 @@ class CallbackHandler implements Handler {
     // does not list the Client as a valid audience, or if it contains
     // additional audiences not trusted by the Client.
     if (idTokenJws.getJWTClaimsSet().getAudience().size() != 1) {
-      throw new RuntimeException("Expected aud claim to contain exactly one value")
+      throw new CallbackValidationException(
+              "Expected aud claim to contain exactly one value")
     }
     matchClaims("aud", idTokenJws.getJWTClaimsSet().getAudience().first(),
                 config.getClientId())
 
     // 9. The current time MUST be before the time represented by the exp Claim.
     if (idTokenJws.getJWTClaimsSet().getExpirationTime().before(new Date())) {
-      throw new RuntimeException("Expected current time to not precede exp time")
+      throw new CallbackValidationException(
+              "Expected current time to not precede exp time")
     }
 
     // 11. If a nonce value was sent in the Authentication Request, a nonce
@@ -261,7 +270,7 @@ class CallbackHandler implements Handler {
   private static void matchClaims(String claimName,
                                   String expectedClaim, String actualClaim) {
     if (actualClaim != expectedClaim) {
-      throw new RuntimeException(
+      throw new CallbackValidationException(
               "Expected ${claimName} '${expectedClaim}' but was '${actualClaim}'")
     }
   }

@@ -15,6 +15,7 @@
  */
 package com.example.app.handlers
 
+import com.example.app.exceptions.SessionException
 import com.example.app.models.AppConfig
 import com.example.app.models.AppSession
 import com.example.app.models.State
@@ -46,7 +47,7 @@ class LoginHandler implements Handler {
       appSession.updateNonce()
       Session session = ctx.get(Session)
       session.set("s", appSession).onError {
-        throw new RuntimeException("Failed to update session")
+        throw new SessionException("Failed to update session")
       }.then {
         URI authUri = authenticationURI(appSession, config)
         log.info("Redirecting to authentication URI '{}'", authUri.toString())
