@@ -139,6 +139,15 @@ aware that a production web application should always be served using HTTPS.
 * The application does not support encrypted ID tokens. This is left as an
 exercise for the reader.
 
+## Support and reporting bugs
+
+This sample is not officially supported, but support will be provided
+on a best-effort basis through GitHub. Please be aware that this sample is
+provided for demonstration purposes and is not intended to be production-ready.
+
+Please report issues using the project's
+[issue tracker](https://github.com/UnboundID/broker-groovy-sign-in-sample/issues).
+
 ## License
 
 This is licensed under the Apache License 2.0.
