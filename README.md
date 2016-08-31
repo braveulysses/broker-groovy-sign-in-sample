@@ -5,7 +5,9 @@ Broker as an authentication and authorization server using OpenID Connect.
 
 ## How to run
 
-Please note that Java 8 is required.
+Please note that Java 8 is required. The Data Broker must be version 6.0.0.0
+and above, and the "user and reference apps" starter schema must have been
+installed.
 
 First, register an OAuth2 Client in the Data Broker configuration.
 The `setup.dsconfig` file is provided for this purpose.
@@ -132,8 +134,6 @@ redirects to the root endpoint.
 
 ## Notes
 
-* Java 8 is required.
-* Data Broker 6.0.0.0 and up is required.
 * By default, the application listens on an unsecured HTTP port. Please be
 aware that a production web application should always be served using HTTPS.
 * The application does not support encrypted ID tokens. This is left as an
