@@ -97,7 +97,10 @@ class CallbackHandler implements Handler {
             ctx.redirect "/"
           }
         } else {
-          throw new CallbackValidationException("code parameter not found")
+          // If the state parameter is present but the code parameter is not,
+          // then this might be a logout redirect. In that case, just redirect
+          // to the root path.
+          ctx.redirect "/"
         }
       }
     }

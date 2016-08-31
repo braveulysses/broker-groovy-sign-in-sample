@@ -16,23 +16,38 @@
 package com.example.app.handlers
 
 import com.example.app.exceptions.SessionException
+import com.example.app.models.AppConfig
 import com.example.app.models.AppSession
+import com.example.app.models.State
+import com.nimbusds.jose.JWSObject
 import groovy.util.logging.Slf4j
 import ratpack.handling.Context
 import ratpack.handling.Handler
+import ratpack.http.HttpUrlBuilder
 import ratpack.session.Session
 
 /**
- * Logs the user out of the application by flipping the 'authenticated' flag on
- * the session and nulling out the access and ID tokens. This does not log the
- * user out of the authentication server.
+ * Performs a single sign out by invoking the authentication server's logout
+ * endpoint.
  */
 @Slf4j
-class LogoutHandler implements Handler {
+class SingleSignOutHandler implements Handler {
   @Override
   void handle(Context ctx) throws Exception {
+    AppConfig config = ctx.get(AppConfig)
+    String returnUri = config.getRedirectUri()
+    log.info("returnUri: ${returnUri}")
     AppSession.fromContext(ctx).then { AppSession appSession ->
       log.info("Logging out of application")
+      State state = new State(appSession.getSessionSecret(),
+                              config.getClientId(), returnUri,
+                              null, null)
+      JWSObject stateJws = state.sign(config.getSigningKey())
+      String stateJwt = stateJws.serialize()
+      appSession.setState(stateJwt)
+      appSession.updateNonce()
+      appSession.setRequiredScopes(null)
+      appSession.setRequiredAcrs(null)
       appSession.setAuthenticated(false)
       appSession.setAccessToken(null)
       appSession.setIdToken(null)
@@ -40,7 +55,13 @@ class LogoutHandler implements Handler {
       session.set("s", appSession).onError {
         throw new SessionException("Failed to update session")
       }.then {
-        ctx.redirect "/"
+        log.info("Logging out of authentication server")
+        URI singleSignoutUri =
+                HttpUrlBuilder.base(new URI(config.getLogoutEndpoint()))
+                        .params([ post_logout_redirect_uri: returnUri,
+                                  state: stateJwt ] as Map)
+                        .build()
+        ctx.redirect singleSignoutUri
       }
     }
   }

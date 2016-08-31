@@ -18,6 +18,7 @@
 import com.example.app.handlers.NotFoundErrorHandler
 import com.example.app.handlers.RootHandler
 import com.example.app.handlers.ScopeProtectedResourceHandler
+import com.example.app.handlers.SingleSignOutHandler
 import com.example.app.models.AppConfig
 import com.example.app.handlers.CallbackHandler
 import com.example.app.handlers.DefaultServerErrorHandler
@@ -65,6 +66,7 @@ ratpack {
     add new CallbackHandler()
     add new LoginHandler()
     add new LogoutHandler()
+    add new SingleSignOutHandler()
     add new DefaultProtectedResourceHandler()
     add new ScopeProtectedResourceHandler()
   }
@@ -98,6 +100,11 @@ ratpack {
     // Example protected resource handler. Requires the user to have an
     // authenticated session and to have authorized a specific scope.
     get("protected/scope", ScopeProtectedResourceHandler)
+
+    // Convenience endpoint for performing a single sign out through the
+    // authentication server. This will also de-authenticate the application
+    // session.
+    get("logout/broker", SingleSignOutHandler)
 
     // Diagnostic endpoint for the application config.
     get("config") { AppConfig config ->

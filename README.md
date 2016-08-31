@@ -33,6 +33,7 @@ strictHttpsValidation: false
 
 authorizeEndpoint: https://example.com/oauth/authorize
 tokenEndpoint: https://example.com/oauth/token
+logoutEndpoint: https://example.com/oauth/logout
 jwksEndpoint: https://example.com/jwks
 scimEndpoint: https://example.com/scim/v2
 idTokenSigningAlgorithm: RS256
