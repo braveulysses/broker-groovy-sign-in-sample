@@ -36,6 +36,8 @@ import static ratpack.handlebars.Template.handlebarsTemplate
 class DefaultProtectedResourceHandler implements Handler {
   // The scopes to request.
   Set<String> scopes = [ "openid", "name", "email" ]
+  // The scopes that must be authorized.
+  Set<String> requiredScopes = scopes
   // A description of this resource handler.
   String description = "This page displays a SCIM resource that is " +
           "only available if the user is logged in to the Data Broker."
@@ -57,7 +59,7 @@ class DefaultProtectedResourceHandler implements Handler {
         log.info("Unauthenticated user attempting to access a protected resource")
         log.info("Sending login request")
 
-        appSession.setRequiredScopes(scopes)
+        appSession.setRequiredScopes(requiredScopes)
         appSession.setRequiredAcrs(null)
         Session session = ctx.get(Session)
         session.set("s", appSession).onError {

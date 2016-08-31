@@ -40,6 +40,8 @@ import static ratpack.handlebars.Template.handlebarsTemplate
 class ScopeProtectedResourceHandler implements Handler {
   // The scopes to request.
   Set<String> scopes = [ "openid", "name", "email", "phone" ]
+  // The scopes that must be authorized.
+  Set<String> requiredScopes = [ "openid" ] as Set
   // A description of this resource handler.
   String description = "This page displays a SCIM resource that is " +
           "only available if the user is logged in to the Data " +
@@ -72,7 +74,7 @@ class ScopeProtectedResourceHandler implements Handler {
           // User was not granted the phone scope; the user will need to
           // authorize again.
           log.info("User will need to authorize the 'phone' scope")
-          appSession.setRequiredScopes([ "openid" ] as Set)
+          appSession.setRequiredScopes(requiredScopes)
           appSession.setRequiredAcrs(null)
           Session session = ctx.get(Session)
           session.set("s", appSession).onError {
@@ -89,7 +91,7 @@ class ScopeProtectedResourceHandler implements Handler {
       } else {
         log.info("Unauthenticated user attempting to access a protected resource")
         log.info("Sending login request")
-        appSession.setRequiredScopes(scopes)
+        appSession.setRequiredScopes(requiredScopes)
         appSession.setRequiredAcrs(null)
         Session session = ctx.get(Session)
         session.set("s", appSession).onError {
