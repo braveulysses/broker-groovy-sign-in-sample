@@ -18,5 +18,5 @@ scimEndpoint: https://example.com/scim/v2
 idTokenSigningAlgorithm: RS256
 
 # Client credentials.
-clientId: test1
+clientId: groovy-sign-in-sample
 clientSecret: Srf9BGpgZqfu1TSI8gTFmX9in8B2Z1ox

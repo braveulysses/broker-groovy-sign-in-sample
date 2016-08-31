@@ -1,30 +1,29 @@
 # broker-groovy-sign-in-sample
 
-This sample demonstrates how a server-side web application authenticates users
-through the Data Broker.
+This sample demonstrates how a server-side web application can use the Data
+Broker as an authentication server using OpenID Connect.
 
 ## How to run
 
 Please note that Java 8 is required.
 
 First, register an OAuth2 Client in the Data Broker configuration.
+The `setup.dsconfig` file is provided for this purpose.
 
 ```
-dsconfig create-key-pair --pair-name sample-idtoken-key
-dsconfig create-oauth2-client --client-name Sample1 \
-  --set client-id:sample1 \
-  --set grant-type:authorization-code \
-  --set redirect-url:http://localhost:5050/callback \
-  --set id-token-signing-algorithm:rs256 \
-  --set id-token-signing-key-pair:sample-idtoken-key
-dsconfig create-permitted-scope --client-name Sample1 --scope-name openid
-dsconfig create-permitted-scope --client-name Sample1 --scope-name email
-dsconfig create-permitted-scope --client-name Sample1 --scope-name profile
+dsconfig --no-prompt --batch-file setup.dsconfig
 ```
 
-Note the client secret that is generated.
+Note that a client secret will be generated automatically, and it is needed in
+the next step. You can use a command like the following to obtain the generated
+client secret, or you can find it using the Management Console.
 
-Then, create an application configuration file.
+```
+dsconfig get-oauth2-client-prop --client-name "Groovy Sign In Sample" \
+  --property client-secret --script-friendly | cut -f 2
+```
+
+Next, create an application configuration file.
 Copy `src/ratpack/config.example.yaml` to `src/ratpack/config.yaml`
 and adjust the values as appropriate.
 
@@ -38,7 +37,7 @@ jwksEndpoint: https://example.com/jwks
 scimEndpoint: https://example.com/scim/v2
 idTokenSigningAlgorithm: RS256
 
-clientId: test1
+clientId: groovy-sign-in-sample
 clientSecret: Srf9BGpgZqfu1TSI8gTFmX9in8B2Z1ox
 ```
 

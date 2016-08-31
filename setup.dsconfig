@@ -1,0 +1,38 @@
+# Create a key pair for signing ID tokens issued to the sample app.
+dsconfig create-key-pair --pair-name sample-idtoken-key
+
+# Register the sample app as a Data Broker client.
+dsconfig create-oauth2-client --client-name "Groovy Sign In Sample" \
+  --set "client-id:groovy-sign-in-sample" \
+  --set grant-type:authorization-code \
+  --set redirect-url:http://localhost:5050/callback \
+  --set id-token-signing-algorithm:rs256 \
+  --set id-token-signing-key-pair:sample-idtoken-key
+
+# Add scopes needed by the sample app. (The 'openid', 'email', and 'phone'
+# scopes are expected to already exist.)
+dsconfig create-oauth2-scope --scope-name name \
+  --type authenticated-identity \
+  --set "description:Provides read access to the user's name and username" \
+  --set "consent-prompt-text:View your name and username." \
+  --set resource-operation:retrieve \
+  --set resource-attribute:userName \
+  --set resource-attribute:name
+dsconfig create-oauth2-scope --scope-name birthday \
+  --type authenticated-identity \
+  --set "description:Provides read access to the user's birth date" \
+  --set "consent-prompt-text:View your date of birth." \
+  --set resource-operation:retrieve \
+  --set resource-attribute:urn:unboundid:schemas:sample:profile:1.0:birthDate
+
+# Configure scopes needed by the sample app.
+dsconfig create-permitted-scope --client-name "Groovy Sign In Sample" \
+  --scope-name openid
+dsconfig create-permitted-scope --client-name "Groovy Sign In Sample" \
+  --scope-name name
+dsconfig create-permitted-scope --client-name "Groovy Sign In Sample" \
+  --scope-name email
+dsconfig create-permitted-scope --client-name "Groovy Sign In Sample" \
+  --scope-name phone --set optional:true
+dsconfig create-permitted-scope --client-name "Groovy Sign In Sample" \
+  --scope-name birthday --set optional:true --set required-acr:MFA

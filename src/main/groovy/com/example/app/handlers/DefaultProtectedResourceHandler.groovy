@@ -38,7 +38,7 @@ import static ratpack.handlebars.Template.handlebarsTemplate
 @Slf4j
 class DefaultProtectedResourceHandler implements Handler {
   // The scopes to request.
-  Set<String> scopes = [ "openid", "email" ]
+  Set<String> scopes = [ "openid", "name", "email" ]
 
   @Override
   void handle(Context ctx) throws Exception {
