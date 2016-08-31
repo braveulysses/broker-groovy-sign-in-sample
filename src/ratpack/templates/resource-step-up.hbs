@@ -18,7 +18,7 @@
       <br><br>
       <h1 class="header center light-blue-text">Data Broker Sign In Sample</h1>
       <div class="row center">
-        <h5 class="header col s12 light">This page displays a SCIM resource that is only available if the user is logged in to the Data Broker.</h5>
+        <h5 class="header col s12 light">{{{description}}}</h5>
       </div>
     </div>
   </div>
@@ -27,8 +27,13 @@
     <div class="col s8 push-s2">
       <div class="card light-blue lighten-5">
         <div class="card-content grey-text text-darken-1">
-          <span class="card-title">Protected resource</span>
-          <pre>{{resource}}</pre>
+          <span class="card-title">Step up</span>
+          <p>To view this page's protected resource, you'll need to authorize again and accept all scopes.</p>
+        </div>
+        <div class="card-action">
+          <p>
+            <a href="{{{loginPath}}}" class="waves-effect waves-light light-blue btn"><i class="material-icons left">vpn_lock</i> Reauthorize</a>
+          </p>
         </div>
       </div>
     </div>

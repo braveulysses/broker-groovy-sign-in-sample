@@ -1,7 +1,7 @@
 # broker-groovy-sign-in-sample
 
 This sample demonstrates how a server-side web application can use the Data
-Broker as an authentication server using OpenID Connect.
+Broker as an authentication and authorization server using OpenID Connect.
 
 ## How to run
 

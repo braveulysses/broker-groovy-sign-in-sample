@@ -17,6 +17,7 @@
 
 import com.example.app.handlers.NotFoundErrorHandler
 import com.example.app.handlers.RootHandler
+import com.example.app.handlers.ScopeProtectedResourceHandler
 import com.example.app.models.AppConfig
 import com.example.app.handlers.CallbackHandler
 import com.example.app.handlers.DefaultServerErrorHandler
@@ -65,6 +66,7 @@ ratpack {
     add new LoginHandler()
     add new LogoutHandler()
     add new DefaultProtectedResourceHandler()
+    add new ScopeProtectedResourceHandler()
   }
 
   handlers {
@@ -92,6 +94,10 @@ ratpack {
     // authenticated session.
     get("protected", DefaultProtectedResourceHandler)
     get("protected/default", DefaultProtectedResourceHandler)
+
+    // Example protected resource handler. Requires the user to have an
+    // authenticated session and to have authorized a specific scope.
+    get("protected/scope", ScopeProtectedResourceHandler)
 
     // Diagnostic endpoint for the application config.
     get("config") { AppConfig config ->

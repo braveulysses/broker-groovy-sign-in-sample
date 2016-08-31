@@ -17,6 +17,7 @@ package com.example.app.handlers
 
 import com.example.app.exceptions.CallbackErrorException
 import com.example.app.exceptions.CallbackValidationException
+import com.example.app.exceptions.TokenValidationException
 import com.example.app.models.AppSession
 import groovy.util.logging.Slf4j
 import io.netty.handler.codec.http.HttpResponseStatus
@@ -47,7 +48,8 @@ class DefaultServerErrorHandler implements ServerErrorHandler {
                 error           : ((CallbackErrorException) throwable).getError(),
                 errorDescription: ((CallbackErrorException) throwable).getErrorDescription()
         ], "text/html"))
-      } else if (throwable.getClass().isAssignableFrom(CallbackValidationException)) {
+      } else if (throwable.getClass().isAssignableFrom(CallbackValidationException)
+              || throwable.getClass().isAssignableFrom(TokenValidationException)) {
         ctx.render(handlebarsTemplate("exception-callback-validation", [
                 authenticated: appSession.getAuthenticated(),
                 returnUri: ctx.getRequest().getUri(),

@@ -18,17 +18,14 @@ package com.example.app.handlers
 import com.example.app.exceptions.SessionException
 import com.example.app.models.AppConfig
 import com.example.app.models.AppSession
-import com.example.app.util.ScimClient
-import com.unboundid.scim2.client.ScimService
-import com.unboundid.scim2.common.GenericScimResource
 import groovy.util.logging.Slf4j
 import ratpack.handling.Context
 import ratpack.handling.Handler
-import ratpack.http.HttpUrlBuilder
 import ratpack.session.Session
 
 import java.util.stream.Collectors
 
+import static com.example.app.util.ScimClient.me
 import static ratpack.handlebars.Template.handlebarsTemplate
 
 /**
@@ -39,15 +36,20 @@ import static ratpack.handlebars.Template.handlebarsTemplate
 class DefaultProtectedResourceHandler implements Handler {
   // The scopes to request.
   Set<String> scopes = [ "openid", "name", "email" ]
+  // A description of this resource handler.
+  String description = "This page displays a SCIM resource that is " +
+          "only available if the user is logged in to the Data Broker."
 
   @Override
   void handle(Context ctx) throws Exception {
     String returnUri = ctx.getRequest().getUri()
     AppSession.fromContext(ctx).then { AppSession appSession ->
       if (appSession.getAuthenticated()) {
-        String resource = me(ctx.get(AppConfig), appSession.getAccessToken()).toString()
-        ctx.render(handlebarsTemplate("resource", [
+        String resource =
+                me(ctx.get(AppConfig), appSession.getAccessToken()).toString()
+        ctx.render(handlebarsTemplate("resource-success", [
                 authenticated: appSession.getAuthenticated(),
+                description: description,
                 resource: resource,
                 returnUri: returnUri
         ], "text/html"))
@@ -56,6 +58,7 @@ class DefaultProtectedResourceHandler implements Handler {
         log.info("Sending login request")
 
         appSession.setRequiredScopes(scopes)
+        appSession.setRequiredAcrs(null)
         Session session = ctx.get(Session)
         session.set("s", appSession).onError {
           throw new SessionException("Failed to update session")
@@ -67,13 +70,5 @@ class DefaultProtectedResourceHandler implements Handler {
         }
       }
     }
-  }
-
-  private static GenericScimResource me(AppConfig config, String bearerToken) {
-    URI meEndpoint = HttpUrlBuilder.base(new URI(config.getScimEndpoint()))
-            .path("Me")
-            .build()
-    ScimService scimService = ScimClient.createInstance(config, bearerToken)
-    return scimService.retrieve(meEndpoint, GenericScimResource)
   }
 }

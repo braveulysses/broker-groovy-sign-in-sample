@@ -26,11 +26,7 @@ import com.example.app.models.TokenRequest
 import com.example.app.models.TokenResponse
 import com.example.app.util.HttpsUtil
 import com.nimbusds.jose.JWSAlgorithm
-import com.nimbusds.jose.JWSVerifier
-import com.nimbusds.jose.crypto.MACVerifier
-import com.nimbusds.jose.crypto.RSASSAVerifier
 import com.nimbusds.jose.jwk.JWK
-import com.nimbusds.jose.jwk.RSAKey
 import com.nimbusds.jose.util.Base64URL
 import com.nimbusds.jwt.SignedJWT
 import com.unboundid.scim2.common.utils.JsonUtils
@@ -44,6 +40,8 @@ import ratpack.util.MultiValueMap
 
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
+
+import static com.example.app.util.TokenUtil.verifyJws
 
 /**
  * Handles OpenID Connect redirect responses. If an authorization code is
@@ -163,12 +161,7 @@ class CallbackHandler implements Handler {
     }
 
     log.info("Verifying access token")
-    if (tokenResponse.getAccessToken()) {
-      SignedJWT accessToken = SignedJWT.parse(tokenResponse.getAccessToken())
-      String kid = accessToken.getHeader().getKeyID()
-      JWK jwk = config.getJwks().getKeyByKeyId(kid)
-      verifyJws(accessToken, jwk)
-    } else {
+    if (!tokenResponse.getAccessToken()) {
       throw new CallbackValidationException(
               "Access token missing from authentication response")
     }
@@ -180,23 +173,6 @@ class CallbackHandler implements Handler {
     } else {
       throw new CallbackValidationException(
               "ID token missing from authentication response")
-    }
-  }
-
-  private static void verifyJws(SignedJWT jwt, JWK jwk) {
-    log.debug("JWK: ${jwk.toJSONString()}")
-    JWSVerifier verifier = new RSASSAVerifier((RSAKey) jwk)
-    verifyJws(jwt, verifier)
-  }
-
-  private static void verifyJws(SignedJWT jwt, String sharedSecret) {
-    JWSVerifier verifier = new MACVerifier(sharedSecret)
-    verifyJws(jwt, verifier)
-  }
-
-  private static void verifyJws(SignedJWT jwt, JWSVerifier verifier) {
-    if (!jwt.verify(verifier)) {
-      throw new CallbackValidationException("Token signature could not be verified")
     }
   }
 

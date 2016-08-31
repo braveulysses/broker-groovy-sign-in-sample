@@ -16,14 +16,10 @@
 package com.example.app.exceptions
 
 /**
- * Represents a validation error during OpenID Connect response processing.
+ * Represents an error encountered while validating a JWT token.
  */
-class CallbackValidationException extends Exception {
-  CallbackValidationException(String message) {
+class TokenValidationException extends Exception {
+  TokenValidationException(String message) {
     super(message)
-  }
-
-  CallbackValidationException(String message, Throwable throwable) {
-    super(message, throwable)
   }
 }
