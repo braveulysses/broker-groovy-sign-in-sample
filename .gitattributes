@@ -1,0 +1,4 @@
+src/ratpack/static/css/* linguist-vendored
+src/ratpack/static/css/style.css linguist-vendored=false
+src/ratpack/static/fonts/* linguist-vendored
+src/ratpack/static/js/* linguist-vendored
