@@ -102,6 +102,7 @@ class ScopeProtectedResourceHandler extends ProtectedResourceHandler {
                     authenticated: appSession.getAuthenticated(),
                     description: getDescription(),
                     instructions: getStepUpInstructions(),
+                    authButtonLabel: "Reauthorize",
                     returnUri: returnUri,
                     loginPath: loginPath(returnUri, "consent")
             ], "text/html"))

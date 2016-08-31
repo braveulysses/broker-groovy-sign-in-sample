@@ -106,6 +106,7 @@ class AcrProtectedResourceHandler extends ProtectedResourceHandler {
                     authenticated: appSession.getAuthenticated(),
                     description: getDescription(),
                     instructions: getStepUpInstructions(),
+                    authButtonLabel: "Re-authenticate",
                     returnUri: returnUri,
                     loginPath: loginPath(returnUri, "login consent"),
                     accountManagerUri: config.getAccountManagerUri()
