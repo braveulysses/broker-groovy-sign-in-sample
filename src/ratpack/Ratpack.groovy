@@ -15,6 +15,7 @@
  */
 
 
+import com.example.app.handlers.AcrProtectedResourceHandler
 import com.example.app.handlers.NotFoundErrorHandler
 import com.example.app.handlers.RootHandler
 import com.example.app.handlers.ScopeProtectedResourceHandler
@@ -69,6 +70,7 @@ ratpack {
     add new SingleSignOutHandler()
     add new DefaultProtectedResourceHandler()
     add new ScopeProtectedResourceHandler()
+    add new AcrProtectedResourceHandler()
   }
 
   handlers {
@@ -100,6 +102,10 @@ ratpack {
     // Example protected resource handler. Requires the user to have an
     // authenticated session and to have authorized a specific scope.
     get("protected/scope", ScopeProtectedResourceHandler)
+
+    // Example protected resource handler. Requires the user to have an
+    // authenticated session and to have satisfied a specific ACR.
+    get("protected/acr", AcrProtectedResourceHandler)
 
     // Convenience endpoint for performing a single sign out through the
     // authentication server. This will also de-authenticate the application

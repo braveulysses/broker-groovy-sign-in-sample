@@ -35,6 +35,7 @@ authorizeEndpoint: https://example.com/oauth/authorize
 tokenEndpoint: https://example.com/oauth/token
 logoutEndpoint: https://example.com/oauth/logout
 jwksEndpoint: https://example.com/jwks
+accountManagerUri: https://example.com/samples/my-account
 scimEndpoint: https://example.com/scim/v2
 idTokenSigningAlgorithm: RS256
 
@@ -112,6 +113,15 @@ resource that may not be accessed by an unauthenticated user. If the user is
 not authenticated, then this handler will redirect to the login endpoint. If
 the user is authenticated, then this handler will perform a SCIM request and
 display the result.
+* **ScopeProtectedResourceHandler** `/protected`: Represents an application
+resource that may not be accessed unless the user has authorized a specific
+scope. This demonstrates how an application might check granted scopes
+subsequent to an authorization.
+* **AcrProtectedResourceHandler** `/protected`: Represents an application
+resource that may not be accessed unless the user's authentication state
+satisfies a particular AMR. This demonstrates how an application may make an
+authorization decision based on information about the user's authentication
+state contained in the ID token.
 * **LoginHandler** `/login`: Creates an OpenID Connect request and redirects to
 the authentication server.
 * **CallbackHandler** `/callback`: Receives an OpenID Connect redirect response,

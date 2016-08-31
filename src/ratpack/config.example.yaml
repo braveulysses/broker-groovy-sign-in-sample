@@ -12,6 +12,8 @@ authorizeEndpoint: https://example.com/oauth/authorize
 tokenEndpoint: https://example.com/oauth/token
 logoutEndpoint: https://example.com/oauth/logout
 jwksEndpoint: https://example.com/jwks
+# Authentication server account management application.
+accountManagerUri: https://example.com/samples/my-account
 # Resource server SCIM endpoint.
 scimEndpoint: https://example.com/scim/v2
 

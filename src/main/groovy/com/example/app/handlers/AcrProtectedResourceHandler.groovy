@@ -19,6 +19,7 @@ import com.example.app.exceptions.SessionException
 import com.example.app.models.AppConfig
 import com.example.app.models.AppSession
 import com.nimbusds.jwt.JWT
+import com.nimbusds.jwt.SignedJWT
 import groovy.util.logging.Slf4j
 import ratpack.handling.Context
 import ratpack.handling.Handler
@@ -27,28 +28,29 @@ import ratpack.session.Session
 import java.util.stream.Collectors
 
 import static com.example.app.util.ScimClient.me
-import static com.example.app.util.TokenUtil.verifySignedAccessToken
 import static ratpack.handlebars.Template.handlebarsTemplate
 
 /**
  * An example protected resource handler. Displays content if the user is
- * authenticated and has authorized a particular scope. If the user is
- * authenticated but has not authorized this scope, then the user is given a
- * chance to reauthorize. Otherwise, it redirects to the login handler.
+ * authenticated and has authenticated with a certain ACR. If the user is
+ * authenticated but has not satisfied this ACR, then the user is given a
+ * chance to re-authenticate and/or enable a second factor. Otherwise, it
+ * redirects to the login handler.
  */
 @Slf4j
-class ScopeProtectedResourceHandler implements Handler {
+class AcrProtectedResourceHandler implements Handler {
   // The scopes to request.
-  Set<String> scopes = [ "openid", "name", "email", "phone" ]
+  Set<String> scopes = [ "openid", "name", "email", "phone", "birthday" ]
   // The scopes that must be authorized.
   Set<String> requiredScopes = [ "openid" ] as Set
   // A description of this resource handler.
   String description = "This page displays a SCIM resource that is " +
           "only available if the user is logged in to the Data " +
-          "Broker and has been authorized for the <em>phone</em> scope."
+          "Broker and has been authenticated with the <em>MFA</em> ACR."
   // Step-up instructions for the user.
   String instructions = "To view this page's protected resource, you'll need " +
-          "to authorize again and accept all scopes."
+          "to re-authenticate using multi-factor authentication. You may first " +
+          "need to edit your account to enable a second factor."
 
   @Override
   void handle(Context ctx) throws Exception {
@@ -56,13 +58,14 @@ class ScopeProtectedResourceHandler implements Handler {
     String returnUri = ctx.getRequest().getUri()
     AppSession.fromContext(ctx).then { AppSession appSession ->
       if (appSession.getAuthenticated()) {
-        // Verify the access token's signature and check it for the "phone" scope.
-        JWT accessToken =
-                verifySignedAccessToken(config, appSession.getAccessToken())
-        Set<String> grantedScopes = accessToken.getJWTClaimsSet()
-                .getStringClaim("scope").split(' ') as Set
-        if (grantedScopes.contains("phone")) {
-          // User was granted the phone scope; display the resource.
+        // Check the ID token for the required ACR.
+        JWT idToken = SignedJWT.parse(appSession.getIdToken())
+        log.info("Checking saved ID token for 'MFA' ACR")
+        log.info("ID token claims: {}", idToken.getJWTClaimsSet().toString())
+        String acr = idToken.getJWTClaimsSet().getStringClaim("acr")
+        if (acr == "MFA") {
+          // User's authentication satisfied the 'MFA' ACR; display the resource.
+          log.info("User logged in with 'MFA' ACR")
           String resource = me(config, appSession.getAccessToken()).toString()
           ctx.render(handlebarsTemplate("resource-success", [
                   authenticated: appSession.getAuthenticated(),
@@ -71,9 +74,10 @@ class ScopeProtectedResourceHandler implements Handler {
                   returnUri: returnUri
           ], "text/html"))
         } else {
-          // User was not granted the phone scope; the user will need to
-          // authorize again.
-          log.info("User will need to authorize the 'phone' scope")
+          // User's authentication did not satisfy the 'MFA' ACR; the user will
+          // need to authenticate again. The user might also need to edit his
+          // or her account first to enable a second factor.
+          log.info("User will need to re-authenticate with the 'MFA' ACR")
           appSession.setRequiredScopes(requiredScopes)
           appSession.setRequiredAcrs(null)
           Session session = ctx.get(Session)
@@ -85,14 +89,15 @@ class ScopeProtectedResourceHandler implements Handler {
                     description: description,
                     instructions: instructions,
                     returnUri: returnUri,
-                    loginPath: loginPath(returnUri, "consent")
+                    loginPath: loginPath(returnUri, "consent"),
+                    accountManagerUri: config.getAccountManagerUri()
             ], "text/html"))
           }
         }
       } else {
         log.info("Unauthenticated user attempting to access a protected resource")
         log.info("Sending login request")
-        appSession.setRequiredScopes(requiredScopes)
+        appSession.setRequiredScopes(scopes)
         appSession.setRequiredAcrs(null)
         Session session = ctx.get(Session)
         session.set("s", appSession).onError {
@@ -106,7 +111,6 @@ class ScopeProtectedResourceHandler implements Handler {
 
   private String loginPath(String returnUri, String prompt) {
     String requestedScopes = scopes.stream().collect(Collectors.joining(' '))
-    String requiredScopes = requestedScopes
     String loginPath = "/login?return_uri=${returnUri}&scope=${requestedScopes}" +
             "&required_scope=${requiredScopes}"
     if (prompt) {

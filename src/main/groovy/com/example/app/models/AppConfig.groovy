@@ -42,6 +42,8 @@ class AppConfig {
   String logoutEndpoint = "https://example.com/oauth/logout"
   // The authentication server's OpenID Connect JWKS endpoint.
   String jwksEndpoint = "https://example.com/jwks"
+  // The authentication server's account management application.
+  String accountManagerUri = "https://example.com/samples/my-account"
   // The authentication server's base SCIM 2 endpoint.
   String scimEndpoint = "https://example.com/scim/v2"
 

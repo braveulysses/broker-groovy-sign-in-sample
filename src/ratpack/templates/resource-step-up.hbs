@@ -28,11 +28,14 @@
       <div class="card light-blue lighten-5">
         <div class="card-content grey-text text-darken-1">
           <span class="card-title">Step up</span>
-          <p>To view this page's protected resource, you'll need to authorize again and accept all scopes.</p>
+          <p>{{{instructions}}}</p>
         </div>
         <div class="card-action">
           <p>
             <a href="{{{loginPath}}}" class="waves-effect waves-light light-blue btn"><i class="material-icons left">vpn_lock</i> Reauthorize</a>
+            {{#if accountManagerUri}}
+              <a href="{{{accountManagerUri}}}" target="_blank" class="waves-effect waves-light light-blue btn"><i class="material-icons left">account_circle</i> Manage account</a>
+            {{/if}}
           </p>
         </div>
       </div>
