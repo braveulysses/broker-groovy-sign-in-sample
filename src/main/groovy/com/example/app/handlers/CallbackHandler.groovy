@@ -148,11 +148,8 @@ class CallbackHandler implements Handler {
           TokenResponse tokenResponse, AppConfig config, AppSession appSession) {
     log.info("Checking for expected scopes in token response")
     if (!tokenResponse.getScopes().isEmpty()) {
-      // Get the expected scopes from the state JWT. It's okay to use the state
-      // in the app session instead of the state received in the authentication
-      // response, because they've already been confirmed to be identical.
-      Set<String> requiredScopes = SignedJWT.parse(appSession.getState())
-              .getJWTClaimsSet().getClaim("required_scope") as Set
+      // Get the expected scopes from the app session.
+      Set<String> requiredScopes = appSession.getRequiredScopes()
       if (requiredScopes && !requiredScopes.isEmpty()) {
         if (!tokenResponse.getScopes().containsAll(requiredScopes)) {
           throw new CallbackValidationException(

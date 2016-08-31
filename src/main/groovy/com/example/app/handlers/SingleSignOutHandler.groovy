@@ -40,8 +40,7 @@ class SingleSignOutHandler implements Handler {
     AppSession.fromContext(ctx).then { AppSession appSession ->
       log.info("Logging out of application")
       State state = new State(appSession.getSessionSecret(),
-                              config.getClientId(), returnUri,
-                              null, null)
+                              config.getClientId(), returnUri)
       JWSObject stateJws = state.sign(config.getSigningKey())
       String stateJwt = stateJws.serialize()
       appSession.setState(stateJwt)

@@ -52,22 +52,13 @@ class State {
   // The return URI. The callback handler will redirect the user-agent to this
   // URI following a successful authentication.
   String returnUri
-  // Required scopes. The callback handler will reject an authentication
-  // response if these scopes were not authorized.
-  Set<String> requiredScopes
-  // Acceptable ACRs. The callback handler will reject an authentication response
-  // if at least one of these ACRs wasn't satisfied by the authentication.
-  Set<String> acceptableAcrs
 
-  public State(String sessionSecret, String clientId, String returnUri,
-               Set<String> requiredScopes, Set<String> acceptableAcrs) {
+  public State(String sessionSecret, String clientId, String returnUri) {
     this.rfp = sessionSecret
     this.iat = new Date(Instant.now().toEpochMilli())
     this.exp = new Date((Instant.now() + Duration.ofMinutes(15)).toEpochMilli())
     this.aud = clientId
     this.returnUri = returnUri
-    this.requiredScopes = requiredScopes
-    this.acceptableAcrs = acceptableAcrs
   }
 
   public JWSObject sign(String signingKey) {
@@ -79,12 +70,6 @@ class State {
             .claim("return_uri", returnUri)
     if (returnUri) {
       builder.claim("return_uri", returnUri)
-    }
-    if (requiredScopes && !requiredScopes.isEmpty()) {
-      builder.claim("required_scope", requiredScopes)
-    }
-    if (acceptableAcrs && !acceptableAcrs.isEmpty()) {
-      builder.claim("acceptable_acr_values", acceptableAcrs)
     }
     SignedJWT jwt = new SignedJWT(new JWSHeader(jwa), builder.build())
     JWSSigner signer = new MACSigner(signingKey)

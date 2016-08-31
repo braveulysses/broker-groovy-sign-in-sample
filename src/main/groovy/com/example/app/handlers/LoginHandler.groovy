@@ -69,11 +69,8 @@ class LoginHandler implements Handler {
 
     AppConfig config = ctx.get(AppConfig)
     AppSession.fromContext(ctx).then { AppSession appSession ->
-      Set<String> requiredScopes = appSession.getRequiredScopes()
-      Set<String> requiredAcrs = appSession.getAcceptableAcrs()
       State state = new State(appSession.getSessionSecret(),
-                              config.getClientId(), returnUri,
-                              requiredScopes, requiredAcrs)
+                              config.getClientId(), returnUri)
       JWSObject stateJws = state.sign(config.getSigningKey())
       String stateJwt = stateJws.serialize()
       appSession.setState(stateJwt)
