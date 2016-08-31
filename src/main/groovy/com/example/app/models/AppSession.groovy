@@ -42,9 +42,9 @@ class AppSession implements Serializable {
   // Required scopes. A resource handler may populate this so that it can be
   // consumed by the login handler.
   Set<String> requiredScopes
-  // Required ACRs. A resource handler may populate this so that it can be
+  // Acceptable ACRs. A resource handler may populate this so that it can be
   // consumed by the login handler.
-  Set<String> requiredAcrs
+  Set<String> acceptableAcrs
 
   public AppSession() {
     SecureRandom random = new SecureRandom()

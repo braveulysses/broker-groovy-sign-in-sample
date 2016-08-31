@@ -32,6 +32,12 @@ import static ratpack.handlebars.Template.handlebarsTemplate
 @Slf4j
 class DefaultProtectedResourceHandler extends ProtectedResourceHandler {
   @Override
+  String getDescription() {
+    return "This page displays a SCIM resource that is only available if the " +
+            "user is logged in to the Data Broker."
+  }
+
+  @Override
   Set<String> getScopes() {
     return [ "openid", "name", "email" ]
   }
@@ -42,9 +48,13 @@ class DefaultProtectedResourceHandler extends ProtectedResourceHandler {
   }
 
   @Override
-  String getDescription() {
-    return "This page displays a SCIM resource that is only available if the " +
-            "user is logged in to the Data Broker."
+  List<String> getACRs() {
+    return null
+  }
+
+  @Override
+  Set<String> getAcceptableACRs() {
+    return null
   }
 
   @Override
@@ -65,7 +75,7 @@ class DefaultProtectedResourceHandler extends ProtectedResourceHandler {
         log.info("Sending login request")
 
         appSession.setRequiredScopes(getRequiredScopes())
-        appSession.setRequiredAcrs(null)
+        appSession.setAcceptableAcrs(null)
         Session session = ctx.get(Session)
         session.set("s", appSession).onError {
           throw new SessionException("Failed to update session")

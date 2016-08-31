@@ -47,7 +47,7 @@ class SingleSignOutHandler implements Handler {
       appSession.setState(stateJwt)
       appSession.updateNonce()
       appSession.setRequiredScopes(null)
-      appSession.setRequiredAcrs(null)
+      appSession.setAcceptableAcrs(null)
       appSession.setAuthenticated(false)
       appSession.setAccessToken(null)
       appSession.setIdToken(null)

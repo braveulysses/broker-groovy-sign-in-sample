@@ -59,6 +59,16 @@ class ScopeProtectedResourceHandler extends ProtectedResourceHandler {
   }
 
   @Override
+  List<String> getACRs() {
+    return null
+  }
+
+  @Override
+  Set<String> getAcceptableACRs() {
+    return null
+  }
+
+  @Override
   void handle(Context ctx) throws Exception {
     AppConfig config = ctx.get(AppConfig)
     String returnUri = ctx.getRequest().getUri()
@@ -83,7 +93,7 @@ class ScopeProtectedResourceHandler extends ProtectedResourceHandler {
           // authorize again.
           log.info("User will need to authorize the 'phone' scope")
           appSession.setRequiredScopes(getRequiredScopes())
-          appSession.setRequiredAcrs(null)
+          appSession.setAcceptableAcrs(null)
           Session session = ctx.get(Session)
           session.set("s", appSession).onError {
             throw new SessionException("Failed to update session")
@@ -101,7 +111,7 @@ class ScopeProtectedResourceHandler extends ProtectedResourceHandler {
         log.info("Unauthenticated user attempting to access a protected resource")
         log.info("Sending login request")
         appSession.setRequiredScopes(getRequiredScopes())
-        appSession.setRequiredAcrs(null)
+        appSession.setAcceptableAcrs(null)
         Session session = ctx.get(Session)
         session.set("s", appSession).onError {
           throw new SessionException("Failed to update session")

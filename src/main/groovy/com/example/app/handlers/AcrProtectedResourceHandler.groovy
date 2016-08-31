@@ -61,6 +61,16 @@ class AcrProtectedResourceHandler extends ProtectedResourceHandler {
   }
 
   @Override
+  List<String> getACRs() {
+    return [ "MFA", "Default" ]
+  }
+
+  @Override
+  Set<String> getAcceptableACRs() {
+    return null
+  }
+
+  @Override
   void handle(Context ctx) throws Exception {
     AppConfig config = ctx.get(AppConfig)
     String returnUri = ctx.getRequest().getUri()
@@ -87,7 +97,7 @@ class AcrProtectedResourceHandler extends ProtectedResourceHandler {
           // or her account first to enable a second factor.
           log.info("User will need to re-authenticate with the 'MFA' ACR")
           appSession.setRequiredScopes(getRequiredScopes())
-          appSession.setRequiredAcrs(null)
+          appSession.setAcceptableAcrs(null)
           Session session = ctx.get(Session)
           session.set("s", appSession).onError {
             throw new SessionException("Failed to update session")
@@ -97,7 +107,7 @@ class AcrProtectedResourceHandler extends ProtectedResourceHandler {
                     description: getDescription(),
                     instructions: getStepUpInstructions(),
                     returnUri: returnUri,
-                    loginPath: loginPath(returnUri, "consent"),
+                    loginPath: loginPath(returnUri, "login consent"),
                     accountManagerUri: config.getAccountManagerUri()
             ], "text/html"))
           }
@@ -106,7 +116,7 @@ class AcrProtectedResourceHandler extends ProtectedResourceHandler {
         log.info("Unauthenticated user attempting to access a protected resource")
         log.info("Sending login request")
         appSession.setRequiredScopes(getRequiredScopes())
-        appSession.setRequiredAcrs(null)
+        appSession.setAcceptableAcrs(null)
         Session session = ctx.get(Session)
         session.set("s", appSession).onError {
           throw new SessionException("Failed to update session")

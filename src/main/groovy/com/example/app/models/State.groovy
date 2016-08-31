@@ -55,19 +55,19 @@ class State {
   // Required scopes. The callback handler will reject an authentication
   // response if these scopes were not authorized.
   Set<String> requiredScopes
-  // Required ACRs. The callback handler will reject an authentication response
+  // Acceptable ACRs. The callback handler will reject an authentication response
   // if at least one of these ACRs wasn't satisfied by the authentication.
-  Set<String> requiredAcrs
+  Set<String> acceptableAcrs
 
   public State(String sessionSecret, String clientId, String returnUri,
-               Set<String> requiredScopes, Set<String> requiredAcrs) {
+               Set<String> requiredScopes, Set<String> acceptableAcrs) {
     this.rfp = sessionSecret
     this.iat = new Date(Instant.now().toEpochMilli())
     this.exp = new Date((Instant.now() + Duration.ofMinutes(15)).toEpochMilli())
     this.aud = clientId
     this.returnUri = returnUri
     this.requiredScopes = requiredScopes
-    this.requiredAcrs = requiredAcrs
+    this.acceptableAcrs = acceptableAcrs
   }
 
   public JWSObject sign(String signingKey) {
@@ -83,8 +83,8 @@ class State {
     if (requiredScopes && !requiredScopes.isEmpty()) {
       builder.claim("required_scope", requiredScopes)
     }
-    if (requiredAcrs && !requiredAcrs.isEmpty()) {
-      builder.claim("required_acr_values", requiredAcrs)
+    if (acceptableAcrs && !acceptableAcrs.isEmpty()) {
+      builder.claim("acceptable_acr_values", acceptableAcrs)
     }
     SignedJWT jwt = new SignedJWT(new JWSHeader(jwa), builder.build())
     JWSSigner signer = new MACSigner(signingKey)

@@ -256,6 +256,18 @@ class CallbackHandler implements Handler {
     // in the previous step.
     validateAccessTokenHash(idTokenJws.getHeader().getAlgorithm(), accessToken,
                             idTokenJws.getJWTClaimsSet().getClaim("at_hash") as String)
+
+    // If the resource handler that initiated the authentication request
+    // requires a specific ACR, check here.
+    if (appSession.getAcceptableAcrs() && appSession.getAcceptableAcrs() != null) {
+      String actualAcr = idTokenJws.getJWTClaimsSet().getStringClaim("acr")
+      if (actualAcr) {
+        if (!appSession.getAcceptableAcrs().contains(actualAcr)) {
+          throw new CallbackValidationException(
+                  "ACR '${actualAcr}' is not an acceptable ACR")
+        }
+      }
+    }
   }
 
   private static void matchClaims(String claimName,

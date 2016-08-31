@@ -50,7 +50,7 @@ import java.util.stream.Collectors
  *   authentication request to be considered successful. This set is put into
  *   the state and is enforced by the application after the authentication
  *   response is received.</li>
- *   <li>required_acr_values - A set of ACRs, any one of which must have been
+ *   <li>acceptable_acr_values - A set of ACRs, any one of which must have been
  *   satisfied for the authentication request to be considered successful. This
  *   set is put into the state and is enforced by the application after the
  *   authentication response is received.</li>
@@ -70,7 +70,7 @@ class LoginHandler implements Handler {
     AppConfig config = ctx.get(AppConfig)
     AppSession.fromContext(ctx).then { AppSession appSession ->
       Set<String> requiredScopes = appSession.getRequiredScopes()
-      Set<String> requiredAcrs = appSession.getRequiredAcrs()
+      Set<String> requiredAcrs = appSession.getAcceptableAcrs()
       State state = new State(appSession.getSessionSecret(),
                               config.getClientId(), returnUri,
                               requiredScopes, requiredAcrs)
@@ -79,7 +79,7 @@ class LoginHandler implements Handler {
       appSession.setState(stateJwt)
       appSession.updateNonce()
       appSession.setRequiredScopes(null)
-      appSession.setRequiredAcrs(null)
+      appSession.setAcceptableAcrs(null)
       Session session = ctx.get(Session)
       session.set("s", appSession).onError {
         throw new SessionException("Failed to update session")

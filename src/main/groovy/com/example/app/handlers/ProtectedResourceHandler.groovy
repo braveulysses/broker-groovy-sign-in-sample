@@ -36,7 +36,7 @@ abstract class ProtectedResourceHandler implements Handler {
    * authorization, which may be passed to the UI. The default implementation
    * returns {@code null}, since a resource handler may not need step-up.
    *
-   * @return Step-up instructions for the user.
+   * @return Step-up instructions for the user. May be {@code null}.
    */
   public String getStepUpInstructions() {
     return null
@@ -58,9 +58,29 @@ abstract class ProtectedResourceHandler implements Handler {
    * the resource handler prefers to check itself should be omitted from this
    * set.
    *
-   * @return The set of scopes required by this handler.
+   * @return The set of scopes required by this handler. May be {@code null}.
    */
   public abstract Set<String> getRequiredScopes()
+
+  /**
+   * Returns the set of ACRs that the resource handler will request when making
+   * an OpenID Connect request.
+   *
+   * @return The ACRs to specify in an authentication request. May be {@code null}.
+   */
+  public abstract List<String> getACRs()
+
+  /**
+   * Returns the set of ACRs that the resource handler considers satisfactory.
+   * The callback handler will use this list to automatically check the ID token
+   * in an authentication response; if any one of the specified ACRs are present,
+   * then the authentication will be accepted. Otherwise, the authentication
+   * will be considered a failure. Any ACRs that the resource handler prefers
+   * to check itself should be omitted from this list.
+   *
+   * @return A list of acceptable ACRs for this handler. May be {@code null}.
+   */
+  public abstract Set<String> getAcceptableACRs()
 
   /**
    * Returns a request path that may be used to initiate an authentication
@@ -80,6 +100,13 @@ abstract class ProtectedResourceHandler implements Handler {
     String requiredScopes = getRequiredScopes().stream().collect(Collectors.joining(' '))
     String loginPath = "/login?return_uri=${returnUri}&scope=${requestedScopes}" +
             "&required_scope=${requiredScopes}"
+    if (getACRs() && !getACRs().isEmpty()) {
+      loginPath = loginPath + "&acr_values=" +
+              getACRs().stream().collect(Collectors.joining(' '))
+    }
+    // Unlike the other authentication parameters, prompt is taken as an
+    // argument and is not stored as an instance field because we don't
+    // necessarily want to set it for ALL requests.
     if (prompt) {
       loginPath = loginPath + "&prompt=" + prompt
     }
