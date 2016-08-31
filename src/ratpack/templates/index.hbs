@@ -29,27 +29,27 @@
         <div class="col s12 m4">
           <div class="icon-block">
             <h2 class="center light-blue-text"><a href="/protected/default"><i class="material-icons">face</i></a></h2>
-            <h5 class="center"><a href="/protected/default">View protected resource requiring default authentication</a></h5>
+            <h5 class="center"><a href="/protected/default">1. View protected resource requiring default authentication</a></h5>
 
-            <p class="light">Morbi leo risus, porta ac consectetur ac, vestibulum at eros. Nullam quis risus eget urna mollis ornare vel eu leo. Nullam quis risus eget urna mollis ornare vel eu leo. Donec sed odio dui. Donec sed odio dui.</p>
+            <p class="light">Following this path will require the user to successfully authenticate to the Data Broker. A particular level of authentication is not required.</p>
           </div>
         </div>
 
         <div class="col s12 m4">
           <div class="icon-block">
             <h2 class="center light-blue-text"><a href="/protected/scope"><i class="material-icons">vpn_lock</i></a></h2>
-            <h5 class="center"><a href="/protected/scope">View protected resource requiring a specific scope</a></h5>
+            <h5 class="center"><a href="/protected/scope">2. View protected resource requiring a specific scope</a></h5>
 
-            <p class="light">Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Donec id elit non mi porta gravida at eget metus. Sed posuere consectetur est at lobortis. Maecenas faucibus mollis interdum.</p>
+            <p class="light">This endpoint performs a post-authentication check to ensure that a specific scope was authorized by the end user during authentication. If this condition is not met, the user is asked to reauthorize.</p>
           </div>
         </div>
 
         <div class="col s12 m4">
           <div class="icon-block">
             <h2 class="center light-blue-text"><a href="/protected/acr"><i class="material-icons">fingerprint</i></a></h2>
-            <h5 class="center"><a href="/protected/acr">View protected resource requiring multi-factor authentication</a></h5>
+            <h5 class="center"><a href="/protected/acr">3. View protected resource requiring multi-factor authentication</a></h5>
 
-            <p class="light">Sed posuere consectetur est at lobortis. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis mollis, est non commodo luctus, nisi erat porttitor ligula, eget lacinia odio sem nec elit. Maecenas faucibus mollis interdum.</p>
+            <p class="light">This endpoint performs a post-authentication ACR check to ensure that the user has achieved a particular level of authentication. If this condition is not met, the user is asked to re-authenticate. The user is also given the opportunity to set up multi-factor authentication using a separate account management application.</p>
           </div>
         </div>
       </div>
