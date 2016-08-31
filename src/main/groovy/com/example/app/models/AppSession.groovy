@@ -25,12 +25,26 @@ import java.security.SecureRandom
  * The application session model.
  */
 class AppSession implements Serializable {
+  // A stored session state JWT that will be attached to an authentication
+  // request and then returned in an authentication response.
   String state
+  // A unique session identifier that the authentication server is expected to
+  // include in an ID token.
   String nonce
+  // A session-specific secret that is used to sign the state JWT.
   String sessionSecret
+  // Whether or not the user is considered authenticated.
   Boolean authenticated
+  // The access token received from the authentication server.
   String accessToken
+  // The ID token received from the authentication server.
   String idToken
+  // Required scopes. A resource handler may populate this so that it can be
+  // consumed by the login handler.
+  Set<String> requiredScopes
+  // Required ACRs. A resource handler may populate this so that it can be
+  // consumed by the login handler.
+  Set<String> requiredAcrs
 
   public AppSession() {
     SecureRandom random = new SecureRandom()

@@ -58,11 +58,6 @@ class AppConfig {
   String clientSecret
   // The application's OpenID Connect redirect URI.
   String redirectUri = "http://localhost:5050/callback"
-  // The scopes to request when making an authentication request.
-  Set<String> scopes = [ "openid", "email", "profile" ]
-  // The ACRs to request when making an authentication request. If left empty,
-  // the authentication server will determine the ACR.
-  List<String> acrValues = []
 
   public void setIdTokenSigningAlgorithm(String idTokenSigningAlgorithm) {
     this.idTokenSigningAlgorithm = JWSAlgorithm.parse(idTokenSigningAlgorithm)

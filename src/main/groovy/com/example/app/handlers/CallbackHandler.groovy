@@ -69,6 +69,7 @@ class CallbackHandler implements Handler {
       // Handle response with authorization code.
       AppSession.fromContext(ctx).then { AppSession appSession ->
         log.info("Received success callback URI {}", ctx.getRequest().getUri())
+
         String stateJwt = queryParams.state
         if (stateJwt) {
           if (stateJwt != appSession.getState()) {
@@ -82,6 +83,7 @@ class CallbackHandler implements Handler {
         } else {
           throw new CallbackValidationException("state parameter not found")
         }
+
         String authorizationCode = queryParams.code
         if (authorizationCode) {
           // Make a token request using the authorization code.
@@ -143,13 +145,20 @@ class CallbackHandler implements Handler {
 
   private static void validateTokenResponse(
           TokenResponse tokenResponse, AppConfig config, AppSession appSession) {
-    log.info("Checking scopes in token response")
+    log.info("Checking for expected scopes in token response")
     if (!tokenResponse.getScopes().isEmpty()) {
-      if (!tokenResponse.getScopes().containsAll(config.getScopes())) {
-        throw new CallbackValidationException(
-                "Expected scopes not granted. " +
-                        "Expected scopes: ${config.getScopes()}; " +
-                        "Actual scopes: ${tokenResponse.getScopes()}")
+      // Get the expected scopes from the state JWT. It's okay to use the state
+      // in the app session instead of the state received in the authentication
+      // response, because they've already been confirmed to be identical.
+      Set<String> requiredScopes = SignedJWT.parse(appSession.getState())
+              .getJWTClaimsSet().getClaim("required_scope") as Set
+      if (requiredScopes && !requiredScopes.isEmpty()) {
+        if (!tokenResponse.getScopes().containsAll(requiredScopes)) {
+          throw new CallbackValidationException(
+                  "Expected scopes not granted. " +
+                          "Expected scopes: ${requiredScopes}; " +
+                          "Actual scopes: ${tokenResponse.getScopes()}")
+        }
       }
     }
 

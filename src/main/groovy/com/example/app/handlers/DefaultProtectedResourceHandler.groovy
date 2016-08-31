@@ -15,6 +15,7 @@
  */
 package com.example.app.handlers
 
+import com.example.app.exceptions.SessionException
 import com.example.app.models.AppConfig
 import com.example.app.models.AppSession
 import com.example.app.util.ScimClient
@@ -24,6 +25,9 @@ import groovy.util.logging.Slf4j
 import ratpack.handling.Context
 import ratpack.handling.Handler
 import ratpack.http.HttpUrlBuilder
+import ratpack.session.Session
+
+import java.util.stream.Collectors
 
 import static ratpack.handlebars.Template.handlebarsTemplate
 
@@ -32,7 +36,10 @@ import static ratpack.handlebars.Template.handlebarsTemplate
  * authenticated. Otherwise, redirects to the login handler.
  */
 @Slf4j
-class ProtectedResourceHandler implements Handler {
+class DefaultProtectedResourceHandler implements Handler {
+  // The scopes to request.
+  Set<String> scopes = [ "openid", "email" ]
+
   @Override
   void handle(Context ctx) throws Exception {
     String returnUri = ctx.getRequest().getUri()
@@ -46,7 +53,18 @@ class ProtectedResourceHandler implements Handler {
         ], "text/html"))
       } else {
         log.info("Unauthenticated user attempting to access a protected resource")
-        ctx.redirect "/login?return_uri=${returnUri}"
+        log.info("Sending login request")
+
+        appSession.setRequiredScopes(scopes)
+        Session session = ctx.get(Session)
+        session.set("s", appSession).onError {
+          throw new SessionException("Failed to update session")
+        }.then {
+          String requestedScopes = scopes.stream().collect(Collectors.joining(' '))
+          String requiredScopes = requestedScopes
+          ctx.redirect "/login?return_uri=${returnUri}&scope=${requestedScopes}" +
+                               "&required_scope=${requiredScopes}"
+        }
       }
     }
   }

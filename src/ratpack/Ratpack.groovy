@@ -22,7 +22,7 @@ import com.example.app.handlers.CallbackHandler
 import com.example.app.handlers.DefaultServerErrorHandler
 import com.example.app.handlers.LoginHandler
 import com.example.app.handlers.LogoutHandler
-import com.example.app.handlers.ProtectedResourceHandler
+import com.example.app.handlers.DefaultProtectedResourceHandler
 import com.example.app.handlers.SessionHandler
 import com.example.app.models.AppSession
 import com.example.app.services.JwksService
@@ -64,7 +64,7 @@ ratpack {
     add new CallbackHandler()
     add new LoginHandler()
     add new LogoutHandler()
-    add new ProtectedResourceHandler()
+    add new DefaultProtectedResourceHandler()
   }
 
   handlers {
@@ -90,8 +90,8 @@ ratpack {
 
     // Example protected resource handler. Requires the user to have an
     // authenticated session.
-    get("protected", ProtectedResourceHandler)
-    get("protected/default", ProtectedResourceHandler)
+    get("protected", DefaultProtectedResourceHandler)
+    get("protected/default", DefaultProtectedResourceHandler)
 
     // Diagnostic endpoint for the application config.
     get("config") { AppConfig config ->

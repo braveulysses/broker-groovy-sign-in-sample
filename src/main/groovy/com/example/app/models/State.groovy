@@ -38,31 +38,55 @@ import java.time.Instant
  * et al.
  */
 class State {
+  // The JWA to use when signing a state JWT.
   JWSAlgorithm jwa = JWSAlgorithm.HS256
 
+  // A request forgery protection claim, secret and unique to the session.
   String rfp
+  // The issued-at time.
   Date iat
+  // The state's expiration time.
   Date exp
+  // The state's audience. This client.
   String aud
+  // The return URI. The callback handler will redirect the user-agent to this
+  // URI following a successful authentication.
   String returnUri
+  // Required scopes. The callback handler will reject an authentication
+  // response if these scopes were not authorized.
+  Set<String> requiredScopes
+  // Required ACRs. The callback handler will reject an authentication response
+  // if at least one of these ACRs wasn't satisfied by the authentication.
+  Set<String> requiredAcrs
 
-  public State(String sessionSecret, String clientId, String returnUri) {
+  public State(String sessionSecret, String clientId, String returnUri,
+               Set<String> requiredScopes, Set<String> requiredAcrs) {
     this.rfp = sessionSecret
     this.iat = new Date(Instant.now().toEpochMilli())
     this.exp = new Date((Instant.now() + Duration.ofMinutes(15)).toEpochMilli())
     this.aud = clientId
     this.returnUri = returnUri
+    this.requiredScopes = requiredScopes
+    this.requiredAcrs = requiredAcrs
   }
 
   public JWSObject sign(String signingKey) {
-    JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
+    JWTClaimsSet.Builder builder = new JWTClaimsSet.Builder()
             .issueTime(iat)
             .expirationTime(exp)
             .audience(aud)
             .claim("rfp", rfp)
             .claim("return_uri", returnUri)
-            .build()
-    SignedJWT jwt = new SignedJWT(new JWSHeader(jwa), claimsSet)
+    if (returnUri) {
+      builder.claim("return_uri", returnUri)
+    }
+    if (requiredScopes && !requiredScopes.isEmpty()) {
+      builder.claim("required_scope", requiredScopes)
+    }
+    if (requiredAcrs && !requiredAcrs.isEmpty()) {
+      builder.claim("required_acr_values", requiredAcrs)
+    }
+    SignedJWT jwt = new SignedJWT(new JWSHeader(jwa), builder.build())
     JWSSigner signer = new MACSigner(signingKey)
     jwt.sign(signer)
     return jwt

@@ -107,10 +107,10 @@ and ID tokens issued by the authentication server.
 
 * **SessionHandler**: Invoked for every request. Checks for a session and creates
 one when one doesn't already exist.
-* **ProtectedResourceHandler** `/protected`: Represents an application resource
-that may not be accessed by an unauthenticated user. If the user is not
-authenticated, then this handler will redirect to the login endpoint. If the
-user is authenticated, then this handler will perform a SCIM request and
+* **DefaultProtectedResourceHandler** `/protected`: Represents an application
+resource that may not be accessed by an unauthenticated user. If the user is
+not authenticated, then this handler will redirect to the login endpoint. If
+the user is authenticated, then this handler will perform a SCIM request and
 display the result.
 * **LoginHandler** `/login`: Creates an OpenID Connect request and redirects to
 the authentication server.

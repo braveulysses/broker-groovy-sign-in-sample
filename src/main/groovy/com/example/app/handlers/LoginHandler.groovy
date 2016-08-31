@@ -29,34 +29,67 @@ import ratpack.session.Session
 import java.util.stream.Collectors
 
 /**
- * The login handler. This creates an OpenID Connect authentication request
- * and redirects the user-agent to the authentication server.
+ * The login handler. This class is responsible for creating a {@link State}
+ * object and an OpenID Connect authentication request. It also redirects the
+ * user-agent to the authentication server.
+ *
+ * The login endpoint takes the following query parameters:
+ * <ul>
+ *   <li>return_uri - The application URI to return to after receiving a
+ *   successful authentication response.</li>
+ *   <li>scope - The scopes to request.</li>
+ *   <li>acr_values - A list, in order of preference, of ACRs, any one of which
+ *   the application expects to be satisfied by the authentication request.</li>
+ * </ul>
+ *
+ * The login endpoint may use the following inputs from the {@link AppSession}:
+ * <ul>
+ *   <li>required_scope - Any scopes that must be granted for the
+ *   authentication request to be considered successful. This set is put into
+ *   the state and is enforced by the application after the authentication
+ *   response is received.</li>
+ *   <li>required_acr_values - A set of ACRs, any one of which must have been
+ *   satisfied for the authentication request to be considered successful. This
+ *   set is put into the state and is enforced by the application after the
+ *   authentication response is received.</li>
+ * </ul>
  */
 @Slf4j
 class LoginHandler implements Handler {
   @Override
   void handle(Context ctx) throws Exception {
-    String returnUri = ctx.getRequest().getQueryParams().get("return_uri", null)
+    String returnUri = ctx.getRequest().getQueryParams().get("return_uri")
+    Set<String> requestedScopes = ctx.getRequest().getQueryParams()
+            .get("scope")?.split(' ') as Set
+    List<String> acrs = ctx.getRequest().getQueryParams()
+            .get("acr_values")?.split(' ') as List
+
     AppConfig config = ctx.get(AppConfig)
     AppSession.fromContext(ctx).then { AppSession appSession ->
+      Set<String> requiredScopes = appSession.getRequiredScopes()
+      Set<String> requiredAcrs = appSession.getRequiredAcrs()
       State state = new State(appSession.getSessionSecret(),
-                              config.getClientId(), returnUri)
+                              config.getClientId(), returnUri,
+                              requiredScopes, requiredAcrs)
       JWSObject stateJws = state.sign(config.getSigningKey())
       String stateJwt = stateJws.serialize()
       appSession.setState(stateJwt)
       appSession.updateNonce()
+      appSession.setRequiredScopes(null)
+      appSession.setRequiredAcrs(null)
       Session session = ctx.get(Session)
       session.set("s", appSession).onError {
         throw new SessionException("Failed to update session")
       }.then {
-        URI authUri = authenticationURI(appSession, config)
+        URI authUri = authenticationURI(appSession, config, requestedScopes, acrs)
         log.info("Redirecting to authentication URI '{}'", authUri.toString())
         ctx.redirect authUri
       }
     }
   }
 
-  private static URI authenticationURI(AppSession appSession, AppConfig config) {
+  private static URI authenticationURI(AppSession appSession, AppConfig config,
+                                       Set<String> scopes, List<String> acrs) {
     Map<String, String> params = [
             response_type: "code",
             state: appSession.getState(),
@@ -64,14 +97,12 @@ class LoginHandler implements Handler {
             client_id: config.getClientId(),
             redirect_uri: config.getRedirectUri()
     ]
-    if (!config.getScopes().isEmpty()) {
-      String scopes =
-              config.getScopes().stream().collect(Collectors.joining(' '))
-      params.put("scope", scopes)
+    if (scopes && !scopes.isEmpty()) {
+      String scope = scopes.stream().collect(Collectors.joining(' '))
+      params.put("scope", scope)
     }
-    if (!config.getAcrValues().isEmpty()) {
-      String acrValues =
-              config.getAcrValues().stream().collect(Collectors.joining(' '))
+    if (acrs && !acrs.isEmpty()) {
+      String acrValues = acrs.stream().collect(Collectors.joining(' '))
       params.put("acr_values", acrValues)
     }
 
