@@ -22,10 +22,7 @@ import com.nimbusds.jwt.JWT
 import com.nimbusds.jwt.SignedJWT
 import groovy.util.logging.Slf4j
 import ratpack.handling.Context
-import ratpack.handling.Handler
 import ratpack.session.Session
-
-import java.util.stream.Collectors
 
 import static com.example.app.util.ScimClient.me
 import static ratpack.handlebars.Template.handlebarsTemplate
@@ -38,19 +35,30 @@ import static ratpack.handlebars.Template.handlebarsTemplate
  * redirects to the login handler.
  */
 @Slf4j
-class AcrProtectedResourceHandler implements Handler {
-  // The scopes to request.
-  Set<String> scopes = [ "openid", "name", "email", "phone", "birthday" ]
-  // The scopes that must be authorized.
-  Set<String> requiredScopes = [ "openid" ] as Set
-  // A description of this resource handler.
-  String description = "This page displays a SCIM resource that is " +
-          "only available if the user is logged in to the Data " +
-          "Broker and has been authenticated with the <em>MFA</em> ACR."
-  // Step-up instructions for the user.
-  String instructions = "To view this page's protected resource, you'll need " +
-          "to re-authenticate using multi-factor authentication. You may first " +
-          "need to edit your account to enable a second factor."
+class AcrProtectedResourceHandler extends ProtectedResourceHandler {
+  @Override
+  String getDescription() {
+    return "This page displays a SCIM resource that is only available if the " +
+            "user is logged in to the Data Broker and has been authenticated " +
+            "with the <em>MFA</em> ACR."
+  }
+
+  @Override
+  String getStepUpInstructions() {
+    return "To view this page's protected resource, you'll need to " +
+            "re-authenticate using multi-factor authentication. You may first " +
+            "need to edit your account to enable a second factor."
+  }
+
+  @Override
+  Set<String> getScopes() {
+    return [ "openid", "name", "email", "phone", "birthday" ]
+  }
+
+  @Override
+  Set<String> getRequiredScopes() {
+    return [ "openid" ] as Set
+  }
 
   @Override
   void handle(Context ctx) throws Exception {
@@ -69,7 +77,7 @@ class AcrProtectedResourceHandler implements Handler {
           String resource = me(config, appSession.getAccessToken()).toString()
           ctx.render(handlebarsTemplate("resource-success", [
                   authenticated: appSession.getAuthenticated(),
-                  description: description,
+                  description: getDescription(),
                   resource: resource,
                   returnUri: returnUri
           ], "text/html"))
@@ -78,7 +86,7 @@ class AcrProtectedResourceHandler implements Handler {
           // need to authenticate again. The user might also need to edit his
           // or her account first to enable a second factor.
           log.info("User will need to re-authenticate with the 'MFA' ACR")
-          appSession.setRequiredScopes(requiredScopes)
+          appSession.setRequiredScopes(getRequiredScopes())
           appSession.setRequiredAcrs(null)
           Session session = ctx.get(Session)
           session.set("s", appSession).onError {
@@ -86,8 +94,8 @@ class AcrProtectedResourceHandler implements Handler {
           }.then {
             ctx.render(handlebarsTemplate("resource-step-up", [
                     authenticated: appSession.getAuthenticated(),
-                    description: description,
-                    instructions: instructions,
+                    description: getDescription(),
+                    instructions: getStepUpInstructions(),
                     returnUri: returnUri,
                     loginPath: loginPath(returnUri, "consent"),
                     accountManagerUri: config.getAccountManagerUri()
@@ -97,7 +105,7 @@ class AcrProtectedResourceHandler implements Handler {
       } else {
         log.info("Unauthenticated user attempting to access a protected resource")
         log.info("Sending login request")
-        appSession.setRequiredScopes(scopes)
+        appSession.setRequiredScopes(getRequiredScopes())
         appSession.setRequiredAcrs(null)
         Session session = ctx.get(Session)
         session.set("s", appSession).onError {
@@ -107,15 +115,5 @@ class AcrProtectedResourceHandler implements Handler {
         }
       }
     }
-  }
-
-  private String loginPath(String returnUri, String prompt) {
-    String requestedScopes = scopes.stream().collect(Collectors.joining(' '))
-    String loginPath = "/login?return_uri=${returnUri}&scope=${requestedScopes}" +
-            "&required_scope=${requiredScopes}"
-    if (prompt) {
-      loginPath = loginPath + "&prompt=" + prompt
-    }
-    return loginPath
   }
 }

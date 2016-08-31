@@ -21,10 +21,7 @@ import com.example.app.models.AppSession
 import com.nimbusds.jwt.JWT
 import groovy.util.logging.Slf4j
 import ratpack.handling.Context
-import ratpack.handling.Handler
 import ratpack.session.Session
-
-import java.util.stream.Collectors
 
 import static com.example.app.util.ScimClient.me
 import static com.example.app.util.TokenUtil.verifySignedAccessToken
@@ -37,18 +34,29 @@ import static ratpack.handlebars.Template.handlebarsTemplate
  * chance to reauthorize. Otherwise, it redirects to the login handler.
  */
 @Slf4j
-class ScopeProtectedResourceHandler implements Handler {
-  // The scopes to request.
-  Set<String> scopes = [ "openid", "name", "email", "phone" ]
-  // The scopes that must be authorized.
-  Set<String> requiredScopes = [ "openid" ] as Set
-  // A description of this resource handler.
-  String description = "This page displays a SCIM resource that is " +
-          "only available if the user is logged in to the Data " +
-          "Broker and has been authorized for the <em>phone</em> scope."
-  // Step-up instructions for the user.
-  String instructions = "To view this page's protected resource, you'll need " +
-          "to authorize again and accept all scopes."
+class ScopeProtectedResourceHandler extends ProtectedResourceHandler {
+  @Override
+  String getDescription() {
+    return "This page displays a SCIM resource that is only available if the " +
+            "user is logged in to the Data Broker and has been authorized for " +
+            "the <em>phone</em> scope."
+  }
+
+  @Override
+  String getStepUpInstructions() {
+    return "To view this page's protected resource, you'll need to authorize " +
+            "again and accept all scopes."
+  }
+
+  @Override
+  Set<String> getScopes() {
+    return [ "openid", "name", "email", "phone" ]
+  }
+
+  @Override
+  Set<String> getRequiredScopes() {
+    return [ "openid" ] as Set
+  }
 
   @Override
   void handle(Context ctx) throws Exception {
@@ -66,7 +74,7 @@ class ScopeProtectedResourceHandler implements Handler {
           String resource = me(config, appSession.getAccessToken()).toString()
           ctx.render(handlebarsTemplate("resource-success", [
                   authenticated: appSession.getAuthenticated(),
-                  description: description,
+                  description: getDescription(),
                   resource: resource,
                   returnUri: returnUri
           ], "text/html"))
@@ -74,7 +82,7 @@ class ScopeProtectedResourceHandler implements Handler {
           // User was not granted the phone scope; the user will need to
           // authorize again.
           log.info("User will need to authorize the 'phone' scope")
-          appSession.setRequiredScopes(requiredScopes)
+          appSession.setRequiredScopes(getRequiredScopes())
           appSession.setRequiredAcrs(null)
           Session session = ctx.get(Session)
           session.set("s", appSession).onError {
@@ -82,8 +90,8 @@ class ScopeProtectedResourceHandler implements Handler {
           }.then {
             ctx.render(handlebarsTemplate("resource-step-up", [
                     authenticated: appSession.getAuthenticated(),
-                    description: description,
-                    instructions: instructions,
+                    description: getDescription(),
+                    instructions: getStepUpInstructions(),
                     returnUri: returnUri,
                     loginPath: loginPath(returnUri, "consent")
             ], "text/html"))
@@ -92,7 +100,7 @@ class ScopeProtectedResourceHandler implements Handler {
       } else {
         log.info("Unauthenticated user attempting to access a protected resource")
         log.info("Sending login request")
-        appSession.setRequiredScopes(requiredScopes)
+        appSession.setRequiredScopes(getRequiredScopes())
         appSession.setRequiredAcrs(null)
         Session session = ctx.get(Session)
         session.set("s", appSession).onError {
@@ -102,16 +110,5 @@ class ScopeProtectedResourceHandler implements Handler {
         }
       }
     }
-  }
-
-  private String loginPath(String returnUri, String prompt) {
-    String requestedScopes = scopes.stream().collect(Collectors.joining(' '))
-    String requiredScopes = requestedScopes
-    String loginPath = "/login?return_uri=${returnUri}&scope=${requestedScopes}" +
-            "&required_scope=${requiredScopes}"
-    if (prompt) {
-      loginPath = loginPath + "&prompt=" + prompt
-    }
-    return loginPath
   }
 }
