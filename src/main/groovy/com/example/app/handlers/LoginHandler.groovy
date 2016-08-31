@@ -40,6 +40,8 @@ import java.util.stream.Collectors
  *   <li>scope - The scopes to request.</li>
  *   <li>acr_values - A list, in order of preference, of ACRs, any one of which
  *   the application expects to be satisfied by the authentication request.</li>
+ *   <li>prompt - Login and consent directives that may influence the
+ *   authentication server's behavior.</li>
  * </ul>
  *
  * The login endpoint may use the following inputs from the {@link AppSession}:
@@ -63,6 +65,7 @@ class LoginHandler implements Handler {
             .get("scope")?.split(' ') as Set
     List<String> acrs = ctx.getRequest().getQueryParams()
             .get("acr_values")?.split(' ') as List
+    String prompt = ctx.getRequest().getQueryParams().get("prompt")
 
     AppConfig config = ctx.get(AppConfig)
     AppSession.fromContext(ctx).then { AppSession appSession ->
@@ -81,7 +84,8 @@ class LoginHandler implements Handler {
       session.set("s", appSession).onError {
         throw new SessionException("Failed to update session")
       }.then {
-        URI authUri = authenticationURI(appSession, config, requestedScopes, acrs)
+        URI authUri = authenticationURI(appSession, config,
+                                        requestedScopes, acrs, prompt)
         log.info("Redirecting to authentication URI '{}'", authUri.toString())
         ctx.redirect authUri
       }
@@ -89,7 +93,8 @@ class LoginHandler implements Handler {
   }
 
   private static URI authenticationURI(AppSession appSession, AppConfig config,
-                                       Set<String> scopes, List<String> acrs) {
+                                       Set<String> scopes, List<String> acrs,
+                                       String prompt) {
     Map<String, String> params = [
             response_type: "code",
             state: appSession.getState(),
@@ -104,6 +109,9 @@ class LoginHandler implements Handler {
     if (acrs && !acrs.isEmpty()) {
       String acrValues = acrs.stream().collect(Collectors.joining(' '))
       params.put("acr_values", acrValues)
+    }
+    if (prompt) {
+      params.put("prompt", prompt)
     }
 
     return HttpUrlBuilder.base(new URI(config.getAuthorizeEndpoint()))
