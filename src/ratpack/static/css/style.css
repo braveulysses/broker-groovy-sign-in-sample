@@ -22,7 +22,7 @@ body {
     min-height: 100vh;
     flex-direction: column;
     /* Background pattern from subtlepatterns.com */
-    background-image: url("/images/geometry.png")
+    /*background-image: url("/images/geometry.png")*/
 }
 
 main {
