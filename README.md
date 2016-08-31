@@ -1,4 +1,4 @@
-# broker-groovy-sign-in-sample
+# broker-groovy-sign-in-sample [![Build Status](https://travis-ci.org/UnboundID/broker-groovy-sign-in-sample.svg?branch=master)](https://travis-ci.org/UnboundID/broker-groovy-sign-in-sample)
 
 This sample demonstrates how a server-side web application can use the Data
 Broker as an authentication and authorization server using OpenID Connect.
