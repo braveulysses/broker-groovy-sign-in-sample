@@ -134,6 +134,8 @@ redirects to the root endpoint.
 
 * Java 8 is required.
 * Data Broker 6.0.0.0 and up is required.
+* By default, the application listens on an unsecured HTTP port. Please be
+aware that a production web application should always be served using HTTPS.
 * The application does not support encrypted ID tokens. This is left as an
 exercise for the reader.
 
