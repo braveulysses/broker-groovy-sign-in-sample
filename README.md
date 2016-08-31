@@ -108,18 +108,21 @@ and ID tokens issued by the authentication server.
 
 ### Handlers
 
+Incoming requests are dispatched to handlers for processing. Most but not all
+handlers in this application are tied to particular request paths.
+
 * **SessionHandler**: Invoked for every request. Checks for a session and creates
 one when one doesn't already exist.
-* **DefaultProtectedResourceHandler** `/protected`: Represents an application
-resource that may not be accessed by an unauthenticated user. If the user is
-not authenticated, then this handler will redirect to the login endpoint. If
-the user is authenticated, then this handler will perform a SCIM request and
-display the result.
-* **ScopeProtectedResourceHandler** `/protected`: Represents an application
-resource that may not be accessed unless the user has authorized a specific
-scope. This demonstrates how an application might check granted scopes
+* **DefaultProtectedResourceHandler** `/protected/default`: Represents an
+application resource that may not be accessed by an unauthenticated user. If
+the user is not authenticated, then this handler will redirect to the login
+endpoint. If the user is authenticated, then this handler will perform a SCIM
+request and display the result.
+* **ScopeProtectedResourceHandler** `/protected/scope`: Represents an
+application resource that may not be accessed unless the user has authorized a
+specific scope. This demonstrates how an application might check granted scopes
 subsequent to an authorization.
-* **AcrProtectedResourceHandler** `/protected`: Represents an application
+* **AcrProtectedResourceHandler** `/protected/acr`: Represents an application
 resource that may not be accessed unless the user's authentication state
 satisfies a particular AMR. This demonstrates how an application may make an
 authorization decision based on information about the user's authentication
@@ -131,6 +134,24 @@ validates the response, marks the session as authenticated, and redirects to
 the root endpoint.
 * **LogoutHandler** `/logout`: Marks the session as unauthenticated and
 redirects to the root endpoint.
+
+### Logging out
+
+The application's `/logout` endpoint ends the user's _application session_.
+It does not log the user out of the Data Broker. This means that the user can
+log out of the sample application, then attempt some action requiring a login,
+and the user may be re-authenticated to the application without any prompting
+from the Data Broker. Behind the scenes, the application will have sent an
+OpenID Connect request to the Data Broker, but since the user is still
+authenticated there, it will appear to the user as if a login occurred
+instantly. This may or may not be the desired user experience. Bear in mind
+that an application has various means at its disposal for forcing
+authentication prompts, such as the `prompt` and `max_age` request parameters.
+
+To log out from both the sample application and the Data Broker, you can use
+the **SingleSignOutHandler** at `/logout/broker`. This handler, which is not
+exposed via the UI, can be used as a shortcut to clearing the authentication
+state of the current user.
 
 ## Notes
 
