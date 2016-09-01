@@ -35,6 +35,7 @@ strictHttpsValidation: false
 
 authorizeEndpoint: https://example.com/oauth/authorize
 tokenEndpoint: https://example.com/oauth/token
+revokeEndpoint: https://example.com/oauth/revoke
 logoutEndpoint: https://example.com/oauth/logout
 jwksEndpoint: https://example.com/jwks
 accountManagerUri: https://example.com/samples/my-account
@@ -132,8 +133,8 @@ the authentication server.
 * **CallbackHandler** `/callback`: Receives an OpenID Connect redirect response,
 validates the response, marks the session as authenticated, and redirects to
 the root endpoint.
-* **LogoutHandler** `/logout`: Marks the session as unauthenticated and
-redirects to the root endpoint.
+* **LogoutHandler** `/logout`: Marks the session as unauthenticated, revokes
+the access token, and redirects to the root endpoint.
 
 ### Logging out
 

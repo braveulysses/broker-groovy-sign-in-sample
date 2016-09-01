@@ -10,6 +10,7 @@ issuer: https://example.com
 # Authentication server OAuth2/OpenID Connect endpoints.
 authorizeEndpoint: https://example.com/oauth/authorize
 tokenEndpoint: https://example.com/oauth/token
+revokeEndpoint: https://example.com/oauth/revoke
 logoutEndpoint: https://example.com/oauth/logout
 jwksEndpoint: https://example.com/jwks
 # Authentication server account management application.

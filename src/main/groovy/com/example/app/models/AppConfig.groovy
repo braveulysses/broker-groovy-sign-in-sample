@@ -38,6 +38,8 @@ class AppConfig {
   String authorizeEndpoint = "https://example.com/oauth/authorize"
   // The authentication server's OAuth 2 token endpoint.
   String tokenEndpoint = "https://example.com/oauth/token"
+  // The authentication server's OAuth 2 token revocation endpoint.
+  String revokeEndpoint = "https://example.com/oauth/revoke"
   // The authentication server's logout endpoint.
   String logoutEndpoint = "https://example.com/oauth/logout"
   // The authentication server's OpenID Connect JWKS endpoint.
