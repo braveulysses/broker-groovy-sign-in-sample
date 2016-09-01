@@ -15,7 +15,6 @@
  */
 package com.example.app.handlers
 
-import com.example.app.exceptions.SessionException
 import com.example.app.models.AppConfig
 import com.example.app.models.AppSession
 import com.example.app.models.State
@@ -24,7 +23,6 @@ import groovy.util.logging.Slf4j
 import ratpack.handling.Context
 import ratpack.handling.Handler
 import ratpack.http.HttpUrlBuilder
-import ratpack.session.Session
 
 import java.util.stream.Collectors
 
@@ -77,10 +75,7 @@ class LoginHandler implements Handler {
       appSession.updateNonce()
       appSession.setRequiredScopes(null)
       appSession.setAcceptableAcrs(null)
-      Session session = ctx.get(Session)
-      session.set("s", appSession).onError {
-        throw new SessionException("Failed to update session")
-      }.then {
+      appSession.save(ctx) {
         URI authUri = authenticationURI(appSession, config,
                                         requestedScopes, acrs, prompt)
         log.info("Redirecting to authentication URI '{}'", authUri.toString())

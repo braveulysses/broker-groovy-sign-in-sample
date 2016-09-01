@@ -15,13 +15,11 @@
  */
 package com.example.app.handlers
 
-import com.example.app.exceptions.SessionException
 import com.example.app.models.AppConfig
 import com.example.app.models.AppSession
 import com.nimbusds.jwt.JWT
 import groovy.util.logging.Slf4j
 import ratpack.handling.Context
-import ratpack.session.Session
 
 import static com.example.app.util.ScimClient.me
 import static com.example.app.util.TokenUtil.verifySignedAccessToken
@@ -94,10 +92,7 @@ class ScopeProtectedResourceHandler extends ProtectedResourceHandler {
           log.info("User will need to authorize the 'phone' scope")
           appSession.setRequiredScopes(getRequiredScopes())
           appSession.setAcceptableAcrs(null)
-          Session session = ctx.get(Session)
-          session.set("s", appSession).onError {
-            throw new SessionException("Failed to update session")
-          }.then {
+          appSession.save(ctx) {
             ctx.render(handlebarsTemplate("resource-step-up", [
                     authenticated: appSession.getAuthenticated(),
                     description: getDescription(),
@@ -113,10 +108,7 @@ class ScopeProtectedResourceHandler extends ProtectedResourceHandler {
         log.info("Sending login request")
         appSession.setRequiredScopes(getRequiredScopes())
         appSession.setAcceptableAcrs(null)
-        Session session = ctx.get(Session)
-        session.set("s", appSession).onError {
-          throw new SessionException("Failed to update session")
-        }.then {
+        appSession.save(ctx){
           ctx.redirect loginPath(returnUri, null)
         }
       }

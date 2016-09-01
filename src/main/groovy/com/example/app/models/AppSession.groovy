@@ -15,7 +15,9 @@
  */
 package com.example.app.models
 
+import com.example.app.exceptions.SessionException
 import ratpack.exec.Promise
+import ratpack.func.Block
 import ratpack.handling.Context
 import ratpack.session.Session
 
@@ -25,6 +27,8 @@ import java.security.SecureRandom
  * The application session model.
  */
 class AppSession implements Serializable {
+  public final static String SESSION_KEY = "s"
+
   // A stored session state JWT that will be attached to an authentication
   // request and then returned in an authentication response.
   String state
@@ -53,15 +57,43 @@ class AppSession implements Serializable {
     this.authenticated = false
   }
 
+  /**
+   * Generates a new nonce value. This should be called before making a new
+   * authentication request to ensure that each nonce is unique.
+   */
   public void updateNonce() {
     SecureRandom random = new SecureRandom()
     nonce = generateUniqueValue(random)
   }
 
+  /**
+   * Saves this AppSession instance.
+   *
+   * @param ctx
+   *          The request context.
+   * @param block
+   *          A closure to be executed after the session is successfully updated.
+   */
+  public void save(Context ctx, Block block) {
+    Session session = ctx.get(Session)
+    session.set(SESSION_KEY, this).onError {
+      throw new SessionException("Failed to update session")
+    }.then {
+      block.execute()
+    }
+  }
+
+  /**
+   * Creates an AppSession instance from the request context.
+   *
+   * @param ctx
+   *          The request context.
+   * @return An AppSession instance.
+   */
   public static Promise<AppSession> fromContext(Context ctx) {
     AppSession appSession = new AppSession();
     return Promise.async { downstream ->
-      ctx.get(Session).get("s").then { optional ->
+      ctx.get(Session).get(SESSION_KEY).then { optional ->
         appSession = optional.get() as AppSession
         downstream.success(appSession)
       }

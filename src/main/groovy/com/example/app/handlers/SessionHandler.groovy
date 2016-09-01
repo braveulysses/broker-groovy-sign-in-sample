@@ -21,7 +21,7 @@ import ratpack.handling.Context
 import ratpack.handling.Handler
 import ratpack.session.Session
 
-import static groovy.json.JsonOutput.toJson
+import static com.example.app.models.AppSession.SESSION_KEY
 
 /**
  * The application's in-memory session handler. Creates a session if one
@@ -32,10 +32,10 @@ class SessionHandler implements Handler {
   @Override
   void handle(Context ctx) throws Exception {
     Session session = ctx.get(Session)
-    session.get("s").flatMap { optional ->
+    session.get(SESSION_KEY).flatMap { optional ->
       AppSession appSession = optional.orElse(new AppSession()) as AppSession
       log.info("Authentication state: ${appSession.getAuthenticated()}")
-      session.set("s", appSession).promise()
+      session.set(SESSION_KEY, appSession).promise()
     }.then {
       ctx.next()
     }

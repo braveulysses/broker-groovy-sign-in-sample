@@ -15,12 +15,10 @@
  */
 package com.example.app.handlers
 
-import com.example.app.exceptions.SessionException
 import com.example.app.models.AppSession
 import groovy.util.logging.Slf4j
 import ratpack.handling.Context
 import ratpack.handling.Handler
-import ratpack.session.Session
 
 /**
  * Logs the user out of the application by flipping the 'authenticated' flag on
@@ -36,10 +34,7 @@ class LogoutHandler implements Handler {
       appSession.setAuthenticated(false)
       appSession.setAccessToken(null)
       appSession.setIdToken(null)
-      Session session = ctx.get(Session)
-      session.set("s", appSession).onError {
-        throw new SessionException("Failed to update session")
-      }.then {
+      appSession.save(ctx) {
         ctx.redirect "/"
       }
     }

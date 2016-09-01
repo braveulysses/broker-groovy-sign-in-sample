@@ -15,14 +15,12 @@
  */
 package com.example.app.handlers
 
-import com.example.app.exceptions.SessionException
 import com.example.app.models.AppConfig
 import com.example.app.models.AppSession
 import com.nimbusds.jwt.JWT
 import com.nimbusds.jwt.SignedJWT
 import groovy.util.logging.Slf4j
 import ratpack.handling.Context
-import ratpack.session.Session
 
 import static com.example.app.util.ScimClient.me
 import static ratpack.handlebars.Template.handlebarsTemplate
@@ -98,10 +96,7 @@ class AcrProtectedResourceHandler extends ProtectedResourceHandler {
           log.info("User will need to re-authenticate with the 'MFA' ACR")
           appSession.setRequiredScopes(getRequiredScopes())
           appSession.setAcceptableAcrs(null)
-          Session session = ctx.get(Session)
-          session.set("s", appSession).onError {
-            throw new SessionException("Failed to update session")
-          }.then {
+          appSession.save(ctx) {
             ctx.render(handlebarsTemplate("resource-step-up", [
                     authenticated: appSession.getAuthenticated(),
                     description: getDescription(),
@@ -118,10 +113,7 @@ class AcrProtectedResourceHandler extends ProtectedResourceHandler {
         log.info("Sending login request")
         appSession.setRequiredScopes(getRequiredScopes())
         appSession.setAcceptableAcrs(null)
-        Session session = ctx.get(Session)
-        session.set("s", appSession).onError {
-          throw new SessionException("Failed to update session")
-        }.then {
+        appSession.save(ctx) {
           ctx.redirect loginPath(returnUri, null)
         }
       }

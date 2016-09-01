@@ -17,7 +17,6 @@ package com.example.app.handlers
 
 import com.example.app.exceptions.CallbackErrorException
 import com.example.app.exceptions.CallbackValidationException
-import com.example.app.exceptions.SessionException
 import com.example.app.exceptions.TokenRequestException
 import com.example.app.models.AppConfig
 import com.example.app.models.AppSession
@@ -35,7 +34,6 @@ import ratpack.handling.Context
 import ratpack.handling.Handler
 import ratpack.http.MediaType
 import ratpack.http.client.HttpClient
-import ratpack.session.Session
 import ratpack.util.MultiValueMap
 
 import java.nio.charset.StandardCharsets
@@ -135,10 +133,7 @@ class CallbackHandler implements Handler {
       appSession.setAuthenticated(true)
       appSession.setAccessToken(tokenResponse.getAccessToken())
       appSession.setIdToken(tokenResponse.getIdToken())
-      Session session = ctx.get(Session)
-      session.set("s", appSession).onError {
-        throw new SessionException("Failed to update session")
-      }.then {
+      appSession.save(ctx) {
         log.info("Verified token response")
       }
     }
