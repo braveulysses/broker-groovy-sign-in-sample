@@ -9,7 +9,13 @@ Please note that Java 8 is required. The Data Broker must be version 6.0.0.0
 and above, and the "user and reference apps" starter schema must have been
 installed.
 
-First, register an OAuth2 Client in the Data Broker configuration.
+First, clone this repository.
+
+```
+git clone https://github.com/UnboundID/broker-groovy-sign-in-sample.git
+```
+
+Next, register an OAuth2 Client in the Data Broker configuration.
 The `setup.dsconfig` file is provided for this purpose.
 
 ```
@@ -47,7 +53,9 @@ clientSecret: Srf9BGpgZqfu1TSI8gTFmX9in8B2Z1ox
 ```
 
 Finally, the application can be started using the Gradle wrapper.
-It will listen on port 5050.
+It will listen on port 5050. (When you run the application for the first time,
+there will be a delay as dependencies are downloaded. The application should
+only take a few seconds to start on subsequent runs.)
 
 ```
 $ ./gradlew run
