@@ -6,18 +6,18 @@ This sample demonstrates how a server-side web application can use the Data
 Broker as an authentication and authorization server using OpenID Connect.
 It shows how an application may:
 
-# Make an OAuth 2/OpenID Connect request
-# Handle an OAuth 2/OpenID Connect redirect response
-# Verify an ID token signature
-# Validate ID token claims
-# Verify an access token signature
-# Check access token claims
-# Step up authorization to require a scope
-# Step up authentication to require multi-factor authentication
-# Establish a session based on an ID token
-# Perform logout and revoke access tokens
-# Read Java Web Keys from a JWKS endpoint
-# Make simple SCIM resource requests
+* Make an OAuth 2/OpenID Connect request
+* Handle an OAuth 2/OpenID Connect redirect response
+* Verify an ID token signature
+* Validate ID token claims
+* Verify an access token signature
+* Check access token claims
+* Step up authorization to require a scope
+* Step up authentication to require multi-factor authentication
+* Establish a session based on an ID token
+* Perform logout and revoke access tokens
+* Read Java Web Keys from a JWKS endpoint
+* Make simple SCIM resource requests
 
 ## Initial setup
 
