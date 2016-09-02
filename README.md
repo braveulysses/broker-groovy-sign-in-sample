@@ -1,13 +1,29 @@
 # broker-groovy-sign-in-sample [![Build Status](https://travis-ci.org/UnboundID/broker-groovy-sign-in-sample.svg?branch=master)](https://travis-ci.org/UnboundID/broker-groovy-sign-in-sample)
 
+![Groovy Sign In Sample screenshot](https://cloud.githubusercontent.com/assets/50972/18210042/4a6598ee-70fc-11e6-9ab7-a99acdc321f5.png)
+
 This sample demonstrates how a server-side web application can use the Data
 Broker as an authentication and authorization server using OpenID Connect.
+It shows how an application may:
 
-## How to run
+# Make an OAuth 2/OpenID Connect request
+# Handle an OAuth 2/OpenID Connect redirect response
+# Verify an ID token signature
+# Validate ID token claims
+# Verify an access token signature
+# Check access token claims
+# Step up authorization to require a scope
+# Step up authentication to require multi-factor authentication
+# Establish a session based on an ID token
+# Perform logout and revoke access tokens
+# Read Java Web Keys from a JWKS endpoint
+# Make simple SCIM resource requests
 
-Please note that Java 8 is required. The Data Broker must be version 6.0.0.0
+## Initial setup
+
+Java 8 is required. The Data Broker must be version 6.0.0.0
 and above, and the "user and reference apps" starter schema must have been
-installed.
+installed. Installing the _My Account_ sample application is also recommended.
 
 First, clone this repository.
 
@@ -52,10 +68,15 @@ clientId: groovy-sign-in-sample
 clientSecret: Srf9BGpgZqfu1TSI8gTFmX9in8B2Z1ox
 ```
 
-Finally, the application can be started using the Gradle wrapper.
-It will listen on port 5050. (When you run the application for the first time,
-there will be a delay as dependencies are downloaded. The application should
-only take a few seconds to start on subsequent runs.)
+The application is now ready to run.
+
+## How to run
+
+You start the application using the Gradle wrapper.
+This will start a web server that listens on port 5050.
+(When you run the application for the first time, there will be a delay as
+dependencies are downloaded. The application should only take a few seconds to
+start on subsequent runs.)
 
 ```
 $ ./gradlew run
@@ -72,13 +93,12 @@ $ ./gradlew run
 [main] INFO ratpack.server.RatpackServer - Ratpack started (development) for http://localhost:5050
 ```
 
-To test, load [http://localhost:5050/protected](http://localhost:5050/protected)
-in your web browser. This endpoint will detect that you are not authenticated
-and redirect you to the configured authentication server. Upon successful
-authentication, you will be redirected back to the sample application. The
-presence of a logout link will indicate that you are authenticated. If you
-return to the `/protected` endpoint, it will detect that you are logged in,
-perform a GET on the SCIM `/Me` endpoint, and present the results.
+To try out the application, load [http://localhost:5050/](http://localhost:5050/)
+in your web browser. The application will display a numbered list of
+demonstration use cases. Each makes an OpenID Connect request to the Data
+Broker; the response handling differs in each case. Follow along with the
+application log in the console to understand what it's doing behind the scenes.
+It can also be instructive to tail the Data Broker's trace log at the same time.
 
 ## About this sample application
 
