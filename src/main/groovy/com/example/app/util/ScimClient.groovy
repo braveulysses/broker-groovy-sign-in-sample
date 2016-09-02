@@ -57,15 +57,21 @@ class ScimClient {
             }
     )
     Client restClient = ClientBuilder.newClient(clientConfig)
-    WebTarget target = restClient.target(new URI(config.getScimEndpoint()))
+    WebTarget target = restClient.target(baseScimEndpoint(config))
     return new ScimService(target)
   }
 
   public static GenericScimResource me(AppConfig config, String bearerToken) {
     ScimService scimService = createInstance(config, bearerToken)
-    URI meEndpoint = HttpUrlBuilder.base(new URI(config.getScimEndpoint()))
+    URI meEndpoint = HttpUrlBuilder.base(baseScimEndpoint(config))
             .path("Me")
             .build()
     return scimService.retrieve(meEndpoint, GenericScimResource)
+  }
+
+  private static URI baseScimEndpoint(AppConfig config) {
+    return HttpUrlBuilder.base(config.getScimEndpoint())
+            .path("scim/v2")
+            .build()
   }
 }

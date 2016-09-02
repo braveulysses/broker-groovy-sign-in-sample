@@ -51,7 +51,7 @@ class SingleSignOutHandler implements Handler {
       appSession.save(ctx) {
         log.info("Logging out of authentication server")
         URI singleSignoutUri =
-                HttpUrlBuilder.base(new URI(config.getLogoutEndpoint()))
+                HttpUrlBuilder.base(config.getLogoutEndpoint())
                         .params([ post_logout_redirect_uri: returnUri,
                                   state: stateJwt ] as Map)
                         .build()

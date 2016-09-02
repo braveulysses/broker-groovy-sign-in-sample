@@ -17,6 +17,7 @@ package com.example.app.models
 
 import com.nimbusds.jose.JWSAlgorithm
 import com.nimbusds.jose.jwk.JWKSet
+import ratpack.http.HttpUrlBuilder
 
 /**
  * The application configuration model. The default values defined here may be
@@ -34,20 +35,27 @@ class AppConfig {
 
   // The expected value of the authentication server's iss claim.
   String issuer = "https://example.com"
-  // The authentication server's OAuth 2 authorization endpoint.
-  String authorizeEndpoint = "https://example.com/oauth/authorize"
-  // The authentication server's OAuth 2 token endpoint.
-  String tokenEndpoint = "https://example.com/oauth/token"
-  // The authentication server's OAuth 2 token revocation endpoint.
-  String revokeEndpoint = "https://example.com/oauth/revoke"
-  // The authentication server's logout endpoint.
-  String logoutEndpoint = "https://example.com/oauth/logout"
-  // The authentication server's OpenID Connect JWKS endpoint.
-  String jwksEndpoint = "https://example.com/jwks"
+
+  // The authentication server's base URI.
+  String authenticationServerBaseUri = "https://example.com/"
+  // The resource server's base URI.
+  String resourceServerBaseUri = "https://example.com/"
+
   // The authentication server's account management application.
-  String accountManagerUri = "https://example.com/samples/my-account"
-  // The authentication server's base SCIM 2 endpoint.
-  String scimEndpoint = "https://example.com/scim/v2"
+  String accountManagerUri
+
+//  // The authentication server's OAuth 2 authorization endpoint.
+//  String authorizeEndpoint = "https://example.com/oauth/authorize"
+//  // The authentication server's OAuth 2 token endpoint.
+//  String tokenEndpoint = "https://example.com/oauth/token"
+//  // The authentication server's OAuth 2 token revocation endpoint.
+//  String revokeEndpoint = "https://example.com/oauth/revoke"
+//  // The authentication server's logout endpoint.
+//  String logoutEndpoint = "https://example.com/oauth/logout"
+//  // The authentication server's OpenID Connect JWKS endpoint.
+//  String jwksEndpoint = "https://example.com/jwks"
+//  // The authentication server's base SCIM 2 endpoint.
+//  String scimEndpoint = "https://example.com/scim/v2"
 
   // The signing algorithm that the authentication server is expected to use
   // to sign ID tokens.
@@ -64,6 +72,39 @@ class AppConfig {
   String clientSecret
   // The application's OpenID Connect redirect URI.
   String redirectUri = "http://localhost:5050/callback"
+
+  public URI getAuthorizeEndpoint() {
+    return HttpUrlBuilder.base(new URI(authenticationServerBaseUri))
+            .path("oauth/authorize").build()
+  }
+
+  public URI getTokenEndpoint() {
+    return HttpUrlBuilder.base(new URI(authenticationServerBaseUri))
+            .path("oauth/token").build()
+  }
+
+  public URI getRevokeEndpoint() {
+    return HttpUrlBuilder.base(new URI(authenticationServerBaseUri))
+            .path("oauth/revoke").build()
+  }
+
+  public URI getLogoutEndpoint() {
+    return HttpUrlBuilder.base(new URI(authenticationServerBaseUri))
+            .path("oauth/logout").build()
+  }
+
+  public URI getAccountManagerUri() {
+    return new URI(accountManagerUri)
+  }
+
+  public URI getJwksEndpoint() {
+    return HttpUrlBuilder.base(new URI(authenticationServerBaseUri))
+            .path("jwks").build()
+  }
+
+  public URI getScimEndpoint() {
+    return new URI(resourceServerBaseUri)
+  }
 
   public void setIdTokenSigningAlgorithm(String idTokenSigningAlgorithm) {
     this.idTokenSigningAlgorithm = JWSAlgorithm.parse(idTokenSigningAlgorithm)

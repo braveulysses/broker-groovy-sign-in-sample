@@ -111,7 +111,7 @@ class CallbackHandler implements Handler {
             redirectURI: new URI(config.getRedirectUri())
     )
     HttpClient httpClient = ctx.get(HttpClient)
-    httpClient.post(new URI(config.getTokenEndpoint())) { requestSpec ->
+    httpClient.post(config.getTokenEndpoint()) { requestSpec ->
       if (!config.isStrictHttpsValidation()) {
         requestSpec.sslContext(HttpsUtil.createInsecureSSLContext())
       }

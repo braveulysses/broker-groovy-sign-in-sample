@@ -104,7 +104,7 @@ class AcrProtectedResourceHandler extends ProtectedResourceHandler {
                     authButtonLabel: "Re-authenticate",
                     returnUri: returnUri,
                     loginPath: loginPath(returnUri, "login consent"),
-                    accountManagerUri: config.getAccountManagerUri()
+                    accountManagerUri: config.getAccountManagerUri().toString()
             ], "text/html"))
           }
         }

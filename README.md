@@ -56,15 +56,22 @@ and adjust the values as appropriate.
 # Set to false ONLY when using a test server.
 strictHttpsValidation: false
 
-authorizeEndpoint: https://example.com/oauth/authorize
-tokenEndpoint: https://example.com/oauth/token
-revokeEndpoint: https://example.com/oauth/revoke
-logoutEndpoint: https://example.com/oauth/logout
-jwksEndpoint: https://example.com/jwks
+# Authentication server iss value. This should have the form 'https://hostname'
+issuer: https://example.com
+
+# The base URI of the authentication server, with no path.
+authenticationServerBaseUri: https://example.com/
+
+# The base URI of the resource server, with no path.
+resourceServerBaseUri: https://example.com/
+
+# The full URI of an account management application.
 accountManagerUri: https://example.com/samples/my-account
-scimEndpoint: https://example.com/scim/v2
+
+# The JWA used to sign ID tokens for this application.
 idTokenSigningAlgorithm: RS256
 
+# Client credentials.
 clientId: groovy-sign-in-sample
 clientSecret: Srf9BGpgZqfu1TSI8gTFmX9in8B2Z1ox
 ```

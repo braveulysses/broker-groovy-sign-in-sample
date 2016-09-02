@@ -53,7 +53,7 @@ class LogoutHandler implements Handler {
             new TokenRevocationRequest(accessToken)
     AppConfig config = ctx.get(AppConfig)
     HttpClient httpClient = ctx.get(HttpClient)
-    httpClient.post(new URI(config.getRevokeEndpoint())) { requestSpec ->
+    httpClient.post(config.getRevokeEndpoint()) { requestSpec ->
       if (!config.isStrictHttpsValidation()) {
         requestSpec.sslContext(HttpsUtil.createInsecureSSLContext())
       }

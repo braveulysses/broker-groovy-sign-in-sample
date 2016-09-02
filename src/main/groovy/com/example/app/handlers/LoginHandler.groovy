@@ -106,7 +106,7 @@ class LoginHandler implements Handler {
       params.put("prompt", prompt)
     }
 
-    return HttpUrlBuilder.base(new URI(config.getAuthorizeEndpoint()))
+    return HttpUrlBuilder.base(config.getAuthorizeEndpoint())
             .params(params)
             .build()
   }

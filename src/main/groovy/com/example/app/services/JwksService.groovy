@@ -49,7 +49,7 @@ class JwksService implements Service, Runnable {
   public void onStart(StartEvent event) {
     appConfig = event.getRegistry().get(AppConfig)
     strictHttpsValidation = appConfig.isStrictHttpsValidation()
-    jwksUri = new URI(appConfig.getJwksEndpoint())
+    jwksUri = appConfig.getJwksEndpoint()
     int fetchInterval = appConfig.getJwksFetchInterval()
     ExecController execController =
             event.getRegistry().get(ExecController)
