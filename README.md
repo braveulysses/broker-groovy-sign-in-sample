@@ -7,14 +7,15 @@ Broker as an authentication and authorization server using OpenID Connect.
 It shows how an application may:
 
 * Make an OAuth 2/OpenID Connect request
+* Encode the session state as a tamper-evident signed JWT
 * Handle an OAuth 2/OpenID Connect redirect response
-* Verify an ID token signature
+* Verify a JWT ID token signature
 * Validate ID token claims
-* Verify an access token signature
+* Verify a JWT access token signature
 * Check access token claims
 * Step up authorization to require a scope
 * Step up authentication to require multi-factor authentication
-* Establish a session based on an ID token
+* Establish an in-memory session based on an ID token
 * Perform logout and revoke access tokens
 * Read Java Web Keys from a JWKS endpoint
 * Make simple SCIM resource requests
