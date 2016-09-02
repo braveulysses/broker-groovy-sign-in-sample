@@ -171,6 +171,8 @@ validates the response, marks the session as authenticated, and redirects to
 the root endpoint.
 * **LogoutHandler** `/logout`: Marks the session as unauthenticated, revokes
 the access token, and redirects to the root endpoint.
+* **SingleSignOutHandler** `/logout/broker`: Logs out as above, but also logs
+the user out from the Data Broker itself.
 
 ### Logging out
 
@@ -186,9 +188,9 @@ that an application has various means at its disposal for forcing
 authentication prompts, such as the `prompt` and `max_age` request parameters.
 
 To log out from both the sample application and the Data Broker, you can use
-the **SingleSignOutHandler** at `/logout/broker`. This handler, which is not
-exposed via the UI, can be used as a shortcut to clearing the authentication
-state of the current user.
+the **SingleSignOutHandler** at `/logout/broker`. This will affect the user's
+login state for any other application using the same Data Broker as an
+authentication server.
 
 ## Notes
 

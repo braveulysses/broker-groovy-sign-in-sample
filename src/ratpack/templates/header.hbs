@@ -1,14 +1,21 @@
 <header>
+  <ul id="logout-dropdown" class="dropdown-content">
+    <li><a href="/logout">Log out from app</a></li>
+    <li><a href="/logout/broker">Log out from Data Broker</a></li>
+  </ul>
   <nav class="cyan lighten-4" role="navigation">
     <div class="nav-wrapper container"><a id="logo-container" href="/" class="brand-logo"><i class="small material-icons">home</i></a>
       {{#if authenticated}}
         <ul class="right hide-on-med-and-down">
-          <li><a href="/logout"><i class="small material-icons right">exit_to_app</i>Log out</a></li>
+          <!--<li><a href="/logout"><i class="small material-icons right">exit_to_app</i>Log out</a></li>-->
+          <li><a class="dropdown-button" href="#" data-activates="logout-dropdown">Log out<i class="material-icons right">exit_to_app</i></a></li>
         </ul>
 
         <ul id="nav-mobile" class="side-nav">
           <li><a href="/logout"><i class="small material-icons right">exit_to_app</i>Log out</a></li>
         </ul>
+
+
       {{else}}
         <ul class="right hide-on-med-and-down">
           <li><a href="/login?return_uri={{returnUri}}"><i class="small material-icons left rotate-cc-45">exit_to_app</i>Log in</a></li>
