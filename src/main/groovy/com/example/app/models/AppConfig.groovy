@@ -44,19 +44,6 @@ class AppConfig {
   // The authentication server's account management application.
   String accountManagerUri
 
-//  // The authentication server's OAuth 2 authorization endpoint.
-//  String authorizeEndpoint = "https://example.com/oauth/authorize"
-//  // The authentication server's OAuth 2 token endpoint.
-//  String tokenEndpoint = "https://example.com/oauth/token"
-//  // The authentication server's OAuth 2 token revocation endpoint.
-//  String revokeEndpoint = "https://example.com/oauth/revoke"
-//  // The authentication server's logout endpoint.
-//  String logoutEndpoint = "https://example.com/oauth/logout"
-//  // The authentication server's OpenID Connect JWKS endpoint.
-//  String jwksEndpoint = "https://example.com/jwks"
-//  // The authentication server's base SCIM 2 endpoint.
-//  String scimEndpoint = "https://example.com/scim/v2"
-
   // The signing algorithm that the authentication server is expected to use
   // to sign ID tokens.
   JWSAlgorithm idTokenSigningAlgorithm = JWSAlgorithm.RS256
