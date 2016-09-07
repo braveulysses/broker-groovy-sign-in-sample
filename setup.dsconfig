@@ -23,7 +23,7 @@ dsconfig create-oauth2-scope --scope-name birthday \
   --set "description:Provides read access to the user's birth date" \
   --set "consent-prompt-text:View your date of birth." \
   --set resource-operation:retrieve \
-  --set resource-attribute:urn:unboundid:schemas:sample:profile:1.0:birthDate
+  --set resource-attribute:urn:pingidentity:schemas:sample:profile:1.0:birthDate
 
 # Configure scopes needed by the sample app.
 dsconfig create-permitted-scope --client-name "Groovy Sign In Sample" \
