@@ -18,14 +18,12 @@ package com.example.app.util
 import com.example.app.models.AppConfig
 import com.unboundid.scim2.client.ScimService
 import com.unboundid.scim2.common.GenericScimResource
-import org.glassfish.jersey.apache.connector.ApacheConnectorProvider
 import org.glassfish.jersey.client.ClientConfig
+import org.glassfish.jersey.client.oauth2.OAuth2ClientSupport
 import ratpack.http.HttpUrlBuilder
 
 import javax.ws.rs.client.Client
 import javax.ws.rs.client.ClientBuilder
-import javax.ws.rs.client.ClientRequestContext
-import javax.ws.rs.client.ClientRequestFilter
 import javax.ws.rs.client.WebTarget
 
 /**
@@ -43,20 +41,8 @@ class ScimClient {
    */
   public static ScimService createInstance(AppConfig config, String bearerToken) {
     ClientConfig clientConfig = HttpsUtil.createClientConfig(config)
-    ApacheConnectorProvider connectorProvider = new ApacheConnectorProvider()
-    clientConfig.connectorProvider(connectorProvider)
-    clientConfig.register(
-            new ClientRequestFilter()
-            {
-              public void filter(ClientRequestContext requestContext)
-                      throws IOException
-              {
-                requestContext.getHeaders().add(
-                        "Authorization", "Bearer ${bearerToken}")
-              }
-            }
-    )
     Client restClient = ClientBuilder.newClient(clientConfig)
+            .register(OAuth2ClientSupport.feature(bearerToken))
     WebTarget target = restClient.target(baseScimEndpoint(config))
     return new ScimService(target)
   }
